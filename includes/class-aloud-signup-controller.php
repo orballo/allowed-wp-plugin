@@ -1,6 +1,6 @@
 <?php
 
-class Signup_Controller extends WP_REST_Controller
+class Aloud_Signup_Controller extends WP_REST_Controller
 {
   function __construct()
   {

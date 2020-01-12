@@ -2,34 +2,29 @@
 
 class Aloud_Plugin
 {
-  function run()
+  static function run()
   {
-    $this->load_dependencies();
-    $this->set_actions();
-    $this->set_filters();
+    $instance = new static();
+
+    $instance->load_dependencies();
+    $instance->register_actions();
+    $instance->register_filters();
   }
 
   private function load_dependencies()
   {
-    require_once dirname(__FILE__) . '/includes/class-signup-controller.php';
+    require_once dirname(__FILE__) . '/includes/class-aloud-signup-controller.php';
+    require_once dirname(__FILE__) . '/includes/class-aloud-basic-auth.php';
   }
 
-  private function set_actions()
+  private function register_actions()
   {
-    add_action('rest_api_init', array(new Signup_Controller(), 'register_routes'));
+    add_action('rest_api_init', array(new Aloud_Signup_Controller(), 'register_routes'));
   }
 
-  private function set_filters()
+  private function register_filters()
   {
-  }
-
-  static function install()
-  {
-    add_action('init', array(new static(), 'run'));
-
-    register_activation_hook(__FILE__, array('Aloud_Plugin', 'activate'));
-    register_deactivation_hook(__FILE__, array('Aloud_Plugin', 'deactivate'));
-    register_uninstall_hook(__FILE__, array('Aloud_Plugin', 'uninstall'));
+    add_filter('determine_current_user', array(new Aloud_Basic_Auth(), 'authenticate'));
   }
 
   static function activate()
