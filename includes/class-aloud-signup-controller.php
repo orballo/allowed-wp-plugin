@@ -1,12 +1,42 @@
 <?php
 
+/**
+ * Controller for the `/aloud/v1/signup` route
+ * in the REST API.
+ */
 class Aloud_Signup_Controller extends WP_REST_Controller {
-	function __construct() {
-		$this->namespace = 'auth/v1';
+
+	/**
+	 * Route's namespace.
+	 *
+	 * @var string
+	 */
+	public $namespace;
+
+	/**
+	 * Route's base name.
+	 *
+	 * @var string
+	 */
+	public $rest_base;
+
+	/**
+	 * Constructor that sets up the namespace and the route.
+	 *
+	 * @param string $plugin_name The name of the plugin.
+	 * @param string $plugin_version The version of the plugin.
+	 */
+	public function __construct( $plugin_name, $plugin_version ) {
+		$this->namespace = "{$plugin_name}/${plugin_version}";
 		$this->rest_base = 'signup';
 	}
 
-	function register_routes() {
+	/**
+	 * Registers `POST /aloud/v1/signup` route.
+	 *
+	 * @return void
+	 */
+	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
 			$this->rest_base,
@@ -47,10 +77,18 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		);
 	}
 
-	function create_item( $request ) {
-		extract( $request->get_params() );
+	/**
+	 * Undocumented function
+	 *
+	 * @param WP_REST_Request $request A WP request object.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function create_item( $request ) {
+		list('username' => $username,'email' => $email) = $request->get_params();
 
-		$user_id  = register_new_user( $username, $email );
+		$user_id = register_new_user( $username, $email );
+
 		$user     = get_user_by( 'id', $user_id );
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
@@ -60,7 +98,16 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		return $response;
 	}
 
-	function prepare_item_for_response( $user, $request ) {
+	/**
+	 * Modifies the new user data according to the schema
+	 * to send it in the response.
+	 *
+	 * @param WP_User         $user An object with the user's data.
+	 * @param WP_REST_Request $request An object with the request's data.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function prepare_item_for_response( $user, $request ) {
 		$data   = array();
 		$fields = $this->get_fields_for_response( $request );
 
@@ -144,7 +191,14 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		return apply_filters( 'rest_signup_prepare_user', $response, $user, $request );
 	}
 
-	function validate_username( $username ) {
+	/**
+	 * Validates the username parameter.
+	 *
+	 * @param string $username The user's username.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_username( $username ) {
 		if ( empty( $username ) ) {
 			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` parameter cannot be empty.' );
 		}
@@ -154,7 +208,14 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		}
 	}
 
-	function validate_password( $password ) {
+	/**
+	 * Validates the password parameter.
+	 *
+	 * @param string $password The user's password.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_password( $password ) {
 		if ( empty( $password ) ) {
 			return new WP_Error( 'aloud_signup_invalid_passowrd', 'The `password` parameter cannot be empty.' );
 		}
@@ -164,7 +225,13 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		}
 	}
 
-	function validate_email( $email ) {
+	/**
+	 * Validates the email parameter.
+	 *
+	 * @param string $email The user's email.
+	 * @return WP_Error|void
+	 */
+	public function validate_email( $email ) {
 		if ( ! is_email( $email ) ) {
 			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` parameter must be a valid email address.' );
 		}
@@ -174,7 +241,12 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		}
 	}
 
-	function get_item_schema() {
+	/**
+	 * Generates the response's schema.
+	 *
+	 * @return array
+	 */
+	public function get_item_schema() {
 		if ( $this->schema ) {
 			return $this->schema;
 		}

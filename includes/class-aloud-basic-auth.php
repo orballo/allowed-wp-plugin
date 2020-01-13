@@ -1,26 +1,41 @@
 <?php
 
+/**
+ * Implementation of HTTP Basic Authorization for
+ * WordPress REST API.
+ */
 class Aloud_Basic_Auth {
 
-	function authenticate( $user_id ) {
+	/**
+	 * Filter for `determine_current_user`.
+	 * Checks for credentials and authenticates the user.
+	 *
+	 * @param number|false $user_id The user id if authenticated.
+	 *
+	 * @return number|false
+	 */
+	public function authenticate( $user_id ) {
 		// Checks that the user is not already authenticated.
 		if ( ! empty( $user_id ) ) {
 			return $user_id;
 		}
 
 		// Checks that the request is for the REST API.
-		if ( ! strpos( $_SERVER['REQUEST_URI'], rest_get_url_prefix() ) ) {
+		if ( ! isset( $_SERVER['REQUEST_URI'] ) || ! strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), rest_get_url_prefix() ) ) {
 			return $user_id;
 		};
 
 		// Checks that the request carries credentials.
-		if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+		if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) || ! isset( $_SERVER['PHP_AUTH_PW'] ) ) {
 			return $user_id;
 		}
 
+		$username = sanitize_user( wp_unslash( $_SERVER['PHP_AUTH_USER'] ) );
+		$password = sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_PW'] ) );
+
 		$user = wp_authenticate(
-			$_SERVER['PHP_AUTH_USER'],
-			$_SERVER['PHP_AUTH_PW']
+			$username,
+			$password
 		);
 
 		if ( is_wp_error( $user ) ) {
@@ -31,16 +46,16 @@ class Aloud_Basic_Auth {
 
 		return $user->ID;
 	}
+
 	/**
-	 * This method is used with `rest_authentication_errors` hook
-	 * and populates the error response in case the authentication
-	 * failed.
+	 * Filter for `rest_authentication_errors`.
+	 * Populates the error if empty.
 	 *
-	 * @param WP_Error $error The error passed by `rest_authentication_errors`
+	 * @param WP_Error|null $error The error passed by `rest_authentication_errors`.
 	 *
-	 * @return WP_Error|null
+	 * @return WP_Error
 	 */
-	function populate_error( $error ) {
+	public function populate_error( $error ) {
 		if ( ! empty( $error ) ) {
 			return $error;
 		}
