@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ruleset name="Aloud Coding Standard">
+  <!-- Included files -->
+  <file>plugin.php</file>
+  <file>includes</file>
+
+  <!-- Excluded files -->
+  <exclude-pattern>/vendor/</exclude-pattern>
+
+  <!-- CLI Arguments -->
+  <arg value="s" />
+  <arg name="colors" />
+  <arg name="basepath" value="." />
+  <arg name="parallel" value="8" />
+
+  <!-- Rules -->
+  <rule ref="WordPress">
+    <config name="minimum_supported_wp_version" value="5.0" />
+  </rule>
+  <rule ref="PHPCompatibilityWP">
+    <config name="testVersion" value="7.0-" />
+  </rule>
+</ruleset>

@@ -1,0 +1,23 @@
+{
+  "name": "orballo/aloud-wp-plugin",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "Eduardo Campaña",
+      "email": "asrielo@gmail.com"
+    }
+  ],
+  "scripts": {
+    "phpcs": "vendor/bin/phpcs",
+    "phpcbf": "vendor/bin/phpcbf"
+  },
+  "require": {
+    "lcobucci/jwt": "^3.3"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.5",
+    "wp-coding-standards/wpcs": "^2.2",
+    "phpcompatibility/phpcompatibility-wp": "*",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.5.0"
+  }
+}

@@ -1,322 +1,319 @@
 <?php
 
-class Aloud_Signup_Controller extends WP_REST_Controller
-{
-  function __construct()
-  {
-    $this->namespace = 'auth/v1';
-    $this->rest_base = 'signup';
-  }
+class Aloud_Signup_Controller extends WP_REST_Controller {
+	function __construct() {
+		$this->namespace = 'auth/v1';
+		$this->rest_base = 'signup';
+	}
 
-  function register_routes()
-  {
-    register_rest_route($this->namespace, $this->rest_base, array(
-      'methods' => WP_Rest_Server::CREATABLE,
-      'callback' => array($this, 'create_item'),
-      'args' => array(
-        'username' => array(
-          'required' => true,
-          'type' => 'string',
-          'description' => esc_html("The user's username."),
-          'validate_callback' => array($this, 'validate_username'),
-          'sanitize_callback' => function ($username) {
-            return sanitize_user($username, true);
-          },
-        ),
-        'password' => array(
-          'required' => true,
-          'type' => 'string',
-          'description' => esc_html("The user's password."),
-          'validate_callback' => array($this, 'validate_password'),
-          'sanitize_callback' => function ($password) {
-            return sanitize_text_field($password);
-          },
-        ),
-        'email' => array(
-          'required' => true,
-          'type' => 'string',
-          'description' => esc_html("The user's email."),
-          'validate_callback' => array($this, 'validate_email'),
-          'sanitize_callback' => function ($email) {
-            return sanitize_email($email);
-          },
-        ),
-        'context' => $this->get_context_param(array('default' => 'view'))
-      ),
-    ));
-  }
+	function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			$this->rest_base,
+			array(
+				'methods'  => WP_Rest_Server::CREATABLE,
+				'callback' => array( $this, 'create_item' ),
+				'args'     => array(
+					'username' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's username." ),
+						'validate_callback' => array( $this, 'validate_username' ),
+						'sanitize_callback' => function ( $username ) {
+							return sanitize_user( $username, true );
+						},
+					),
+					'password' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's password." ),
+						'validate_callback' => array( $this, 'validate_password' ),
+						'sanitize_callback' => function ( $password ) {
+							return sanitize_text_field( $password );
+						},
+					),
+					'email'    => array(
+						'required'          => true,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's email." ),
+						'validate_callback' => array( $this, 'validate_email' ),
+						'sanitize_callback' => function ( $email ) {
+							return sanitize_email( $email );
+						},
+					),
+					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
+				),
+			)
+		);
+	}
 
-  function create_item($request)
-  {
-    extract($request->get_params());
+	function create_item( $request ) {
+		extract( $request->get_params() );
 
-    $user_id = register_new_user($username, $email);
-    $user = get_user_by('id', $user_id);
-    $response = $this->prepare_item_for_response($user, $request);
-    $response = rest_ensure_response($response);
+		$user_id  = register_new_user( $username, $email );
+		$user     = get_user_by( 'id', $user_id );
+		$response = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $response );
 
-    $response->set_status(201);
+		$response->set_status( 201 );
 
-    return $response;
-  }
+		return $response;
+	}
 
-  function prepare_item_for_response($user, $request)
-  {
-    $data = array();
-    $fields = $this->get_fields_for_response($request);
+	function prepare_item_for_response( $user, $request ) {
+		$data   = array();
+		$fields = $this->get_fields_for_response( $request );
 
-    if (in_array('id', $fields, true)) {
-      $data['id'] = $user->ID;
-    }
+		if ( in_array( 'id', $fields, true ) ) {
+			$data['id'] = $user->ID;
+		}
 
-    if (in_array('username', $fields, true)) {
-      $data['username'] = $user->user_login;
-    }
+		if ( in_array( 'username', $fields, true ) ) {
+			$data['username'] = $user->user_login;
+		}
 
-    if (in_array('name', $fields, true)) {
-      $data['name'] = $user->display_name;
-    }
+		if ( in_array( 'name', $fields, true ) ) {
+			$data['name'] = $user->display_name;
+		}
 
-    if (in_array('first_name', $fields, true)) {
-      $data['first_name'] = $user->first_name;
-    }
+		if ( in_array( 'first_name', $fields, true ) ) {
+			$data['first_name'] = $user->first_name;
+		}
 
-    if (in_array('last_name', $fields, true)) {
-      $data['last_name'] = $user->last_name;
-    }
+		if ( in_array( 'last_name', $fields, true ) ) {
+			$data['last_name'] = $user->last_name;
+		}
 
-    if (in_array('email', $fields, true)) {
-      $data['email'] = $user->user_email;
-    }
+		if ( in_array( 'email', $fields, true ) ) {
+			$data['email'] = $user->user_email;
+		}
 
-    if (in_array('url', $fields, true)) {
-      $data['url'] = $user->user_url;
-    }
+		if ( in_array( 'url', $fields, true ) ) {
+			$data['url'] = $user->user_url;
+		}
 
-    if (in_array('description', $fields, true)) {
-      $data['description'] = $user->description;
-    }
+		if ( in_array( 'description', $fields, true ) ) {
+			$data['description'] = $user->description;
+		}
 
-    if (in_array('link', $fields, true)) {
-      $data['link'] = get_author_posts_url($user->ID, $user->user_nicename);
-    }
+		if ( in_array( 'link', $fields, true ) ) {
+			$data['link'] = get_author_posts_url( $user->ID, $user->user_nicename );
+		}
 
-    if (in_array('locale', $fields, true)) {
-      $data['locale'] = get_user_locale($user);
-    }
+		if ( in_array( 'locale', $fields, true ) ) {
+			$data['locale'] = get_user_locale( $user );
+		}
 
-    if (in_array('nickname', $fields, true)) {
-      $data['nickname'] = $user->nickname;
-    }
+		if ( in_array( 'nickname', $fields, true ) ) {
+			$data['nickname'] = $user->nickname;
+		}
 
-    if (in_array('slug', $fields, true)) {
-      $data['slug'] = $user->user_nicename;
-    }
+		if ( in_array( 'slug', $fields, true ) ) {
+			$data['slug'] = $user->user_nicename;
+		}
 
-    if (in_array('roles', $fields, true)) {
-      // Defensively call array_values() to ensure an array is returned.
-      $data['roles'] = array_values($user->roles);
-    }
+		if ( in_array( 'roles', $fields, true ) ) {
+			// Defensively call array_values() to ensure an array is returned.
+			$data['roles'] = array_values( $user->roles );
+		}
 
-    if (in_array('registered_date', $fields, true)) {
-      $data['registered_date'] = gmdate('c', strtotime($user->user_registered));
-    }
+		if ( in_array( 'registered_date', $fields, true ) ) {
+			$data['registered_date'] = gmdate( 'c', strtotime( $user->user_registered ) );
+		}
 
-    if (in_array('capabilities', $fields, true)) {
-      $data['capabilities'] = (object) $user->allcaps;
-    }
+		if ( in_array( 'capabilities', $fields, true ) ) {
+			$data['capabilities'] = (object) $user->allcaps;
+		}
 
-    if (in_array('extra_capabilities', $fields, true)) {
-      $data['extra_capabilities'] = (object) $user->caps;
-    }
+		if ( in_array( 'extra_capabilities', $fields, true ) ) {
+			$data['extra_capabilities'] = (object) $user->caps;
+		}
 
-    if (in_array('avatar_urls', $fields, true)) {
-      $data['avatar_urls'] = rest_get_avatar_urls($user);
-    }
+		if ( in_array( 'avatar_urls', $fields, true ) ) {
+			$data['avatar_urls'] = rest_get_avatar_urls( $user );
+		}
 
-    if (in_array('meta', $fields, true)) {
-      $data['meta'] = $this->meta->get_value($user->ID, $request);
-    }
+		if ( in_array( 'meta', $fields, true ) ) {
+			$data['meta'] = $this->meta->get_value( $user->ID, $request );
+		}
 
-    $data = $this->filter_response_by_context($data, $request['context']);
+		$data = $this->filter_response_by_context( $data, $request['context'] );
 
-    $response = rest_ensure_response($data);
+		$response = rest_ensure_response( $data );
 
-    return apply_filters('rest_signup_prepare_user', $response, $user, $request);
-  }
+		return apply_filters( 'rest_signup_prepare_user', $response, $user, $request );
+	}
 
-  function validate_username($username)
-  {
-    if (empty($username)) {
-      return new WP_Error('rest_signup_invalid_username', 'The `username` parameter cannot be empty.');
-    }
+	function validate_username( $username ) {
+		if ( empty( $username ) ) {
+			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` parameter cannot be empty.' );
+		}
 
-    if (username_exists($username)) {
-      return new WP_Error('rest_signup_invalid_username', 'The `username` already exists.');
-    }
-  }
+		if ( username_exists( $username ) ) {
+			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` already exists.' );
+		}
+	}
 
-  function validate_password($password)
-  {
-    if (empty($password)) {
-      return new WP_Error('rest_signup_invalid_passowrd', 'The `password` parameter cannot be empty.');
-    }
+	function validate_password( $password ) {
+		if ( empty( $password ) ) {
+			return new WP_Error( 'aloud_signup_invalid_passowrd', 'The `password` parameter cannot be empty.' );
+		}
 
-    if (false !== strpos($password, '\\')) {
-      return new WP_Error('rest_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.');
-    }
-  }
+		if ( false !== strpos( $password, '\\' ) ) {
+			return new WP_Error( 'aloud_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
+		}
+	}
 
-  function validate_email($email)
-  {
-    if (!is_email($email)) {
-      return new WP_Error('rest_signup_invalid_email', 'The `email` parameter must be a valid email address.');
-    }
+	function validate_email( $email ) {
+		if ( ! is_email( $email ) ) {
+			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` parameter must be a valid email address.' );
+		}
 
-    if (email_exists($email)) {
-      return new WP_Error('rest_signup_invalid_email', 'The `email` already exists.');
-    }
-  }
+		if ( email_exists( $email ) ) {
+			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` already exists.' );
+		}
+	}
 
-  function get_item_schema()
-  {
-    if ($this->schema) return $this->schema;
+	function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->schema;
+		}
 
-    $schema = array(
-      '$schema'    => 'http://json-schema.org/draft-04/schema#',
-      'title'      => 'user',
-      'type'       => 'object',
-      'properties' => array(
-        'id'                 => array(
-          'description' => __('Unique identifier for the user.'),
-          'type'        => 'integer',
-          'context'     => array('embed', 'view', 'edit'),
-          'readonly'    => true,
-        ),
-        'username'           => array(
-          'description' => __('Login name for the user.'),
-          'type'        => 'string',
-          'context'     => array('edit'),
-          'required'    => true,
-        ),
-        'name'               => array(
-          'description' => __('Display name for the user.'),
-          'type'        => 'string',
-          'context'     => array('embed', 'view', 'edit'),
-        ),
-        'first_name'         => array(
-          'description' => __('First name for the user.'),
-          'type'        => 'string',
-          'context'     => array('edit'),
-        ),
-        'last_name'          => array(
-          'description' => __('Last name for the user.'),
-          'type'        => 'string',
-          'context'     => array('edit'),
-        ),
-        'email'              => array(
-          'description' => __('The email address for the user.'),
-          'type'        => 'string',
-          'format'      => 'email',
-          'context'     => array('edit'),
-          'required'    => true,
-        ),
-        'url'                => array(
-          'description' => __('URL of the user.'),
-          'type'        => 'string',
-          'format'      => 'uri',
-          'context'     => array('embed', 'view', 'edit'),
-        ),
-        'description'        => array(
-          'description' => __('Description of the user.'),
-          'type'        => 'string',
-          'context'     => array('embed', 'view', 'edit'),
-        ),
-        'link'               => array(
-          'description' => __('Author URL of the user.'),
-          'type'        => 'string',
-          'format'      => 'uri',
-          'context'     => array('embed', 'view', 'edit'),
-          'readonly'    => true,
-        ),
-        'locale'             => array(
-          'description' => __('Locale for the user.'),
-          'type'        => 'string',
-          'enum'        => array_merge(array('', 'en_US'), get_available_languages()),
-          'context'     => array('edit'),
-        ),
-        'nickname'           => array(
-          'description' => __('The nickname for the user.'),
-          'type'        => 'string',
-          'context'     => array('edit'),
-        ),
-        'slug'               => array(
-          'description' => __('An alphanumeric identifier for the user.'),
-          'type'        => 'string',
-          'context'     => array('embed', 'view', 'edit'),
-        ),
-        'registered_date'    => array(
-          'description' => __('Registration date for the user.'),
-          'type'        => 'string',
-          'format'      => 'date-time',
-          'context'     => array('edit'),
-          'readonly'    => true,
-        ),
-        'roles'              => array(
-          'description' => __('Roles assigned to the user.'),
-          'type'        => 'array',
-          'items'       => array(
-            'type' => 'string',
-          ),
-          'context'     => array('edit'),
-        ),
-        'password'           => array(
-          'description' => __('Password for the user (never included).'),
-          'type'        => 'string',
-          'context'     => array(), // Password is never displayed.
-          'required'    => true,
-        ),
-        'capabilities'       => array(
-          'description' => __('All capabilities assigned to the user.'),
-          'type'        => 'object',
-          'context'     => array('edit'),
-          'readonly'    => true,
-        ),
-        'extra_capabilities' => array(
-          'description' => __('Any extra capabilities assigned to the user.'),
-          'type'        => 'object',
-          'context'     => array('edit'),
-          'readonly'    => true,
-        ),
-      ),
-    );
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'user',
+			'type'       => 'object',
+			'properties' => array(
+				'id'                 => array(
+					'description' => __( 'Unique identifier for the user.' ),
+					'type'        => 'integer',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'username'           => array(
+					'description' => __( 'Login name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+					'required'    => true,
+				),
+				'name'               => array(
+					'description' => __( 'Display name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'first_name'         => array(
+					'description' => __( 'First name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+				),
+				'last_name'          => array(
+					'description' => __( 'Last name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+				),
+				'email'              => array(
+					'description' => __( 'The email address for the user.' ),
+					'type'        => 'string',
+					'format'      => 'email',
+					'context'     => array( 'edit' ),
+					'required'    => true,
+				),
+				'url'                => array(
+					'description' => __( 'URL of the user.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'description'        => array(
+					'description' => __( 'Description of the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'link'               => array(
+					'description' => __( 'Author URL of the user.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'locale'             => array(
+					'description' => __( 'Locale for the user.' ),
+					'type'        => 'string',
+					'enum'        => array_merge( array( '', 'en_US' ), get_available_languages() ),
+					'context'     => array( 'edit' ),
+				),
+				'nickname'           => array(
+					'description' => __( 'The nickname for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+				),
+				'slug'               => array(
+					'description' => __( 'An alphanumeric identifier for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'registered_date'    => array(
+					'description' => __( 'Registration date for the user.' ),
+					'type'        => 'string',
+					'format'      => 'date-time',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+				'roles'              => array(
+					'description' => __( 'Roles assigned to the user.' ),
+					'type'        => 'array',
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'edit' ),
+				),
+				'password'           => array(
+					'description' => __( 'Password for the user (never included).' ),
+					'type'        => 'string',
+					'context'     => array(), // Password is never displayed.
+					'required'    => true,
+				),
+				'capabilities'       => array(
+					'description' => __( 'All capabilities assigned to the user.' ),
+					'type'        => 'object',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+				'extra_capabilities' => array(
+					'description' => __( 'Any extra capabilities assigned to the user.' ),
+					'type'        => 'object',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+			),
+		);
 
-    if (get_option('show_avatars')) {
-      $avatar_properties = array();
+		if ( get_option( 'show_avatars' ) ) {
+			$avatar_properties = array();
 
-      $avatar_sizes = rest_get_avatar_sizes();
+			$avatar_sizes = rest_get_avatar_sizes();
 
-      foreach ($avatar_sizes as $size) {
-        $avatar_properties[$size] = array(
-          /* translators: %d: Avatar image size in pixels. */
-          'description' => sprintf(__('Avatar URL with image size of %d pixels.'), $size),
-          'type'        => 'string',
-          'format'      => 'uri',
-          'context'     => array('embed', 'view', 'edit'),
-        );
-      }
+			foreach ( $avatar_sizes as $size ) {
+				$avatar_properties[ $size ] = array(
+					/* translators: %d: Avatar image size in pixels. */
+					'description' => sprintf( __( 'Avatar URL with image size of %d pixels.' ), $size ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				);
+			}
 
-      $schema['properties']['avatar_urls'] = array(
-        'description' => __('Avatar URLs for the user.'),
-        'type'        => 'object',
-        'context'     => array('embed', 'view', 'edit'),
-        'readonly'    => true,
-        'properties'  => $avatar_properties,
-      );
-    }
+			$schema['properties']['avatar_urls'] = array(
+				'description' => __( 'Avatar URLs for the user.' ),
+				'type'        => 'object',
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+				'properties'  => $avatar_properties,
+			);
+		}
 
-    $this->schema = $schema;
+		$this->schema = $schema;
 
-    return $this->schema;
-  }
+		return $this->schema;
+	}
 }
