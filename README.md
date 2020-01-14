@@ -10,8 +10,8 @@
   - [ ] Stateful.
   - [ ] Refresh Token.
   - [ ] Blacklist Token.
-- [ ] Authentication with cookies for the same domain/subdomains.
 - [ ] Authentication with sessions.
+- [ ] Authentication with cookies for the same domain/subdomains.
 - [ ] **Bonus:** Authentication with OAuth2.
 
 ### Sign-Up Methods
