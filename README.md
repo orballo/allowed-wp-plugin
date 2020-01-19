@@ -7,7 +7,6 @@
 - [x] HTTP Basic Authentication.
 - [ ] Bearer Token Authentication with JWT.
   - [ ] Stateless.
-  - [ ] Stateful.
   - [ ] Refresh Token.
   - [ ] Blacklist Token.
 - [ ] Authentication with sessions.
@@ -16,16 +15,24 @@
 
 ### Sign-Up Methods
 
-- [x] Sign-Up with username, email and password.
-- [ ] Sign-Up with email and password.
-- [ ] Sign-Up passwordless with magic link.
-- [ ] Sign-Up passwordless with code.
-- [ ] **Bonus:** Sign-Up with Google.
+- [x] Sign-up with username, email and password.
+- [ ] Sign-up with email and password.
+- [ ] Sign-up passwordless with magic link.
+- [ ] Sign-up passwordless with code.
+- [ ] **Bonus:** Sign-up with Google.
 
 ### Sign-In Methods
 
-- [ ] Sign-In with username and password.
-- [ ] Sign-In with email and password.
-- [ ] Sign-In passwordless with magic link.
-- [ ] Sign-In passwordless with code.
-- [ ] **Bonus:** Sign-In with Google.
+- [ ] Sign-in with username and password.
+- [ ] Sign-in with email and password.
+- [ ] Sign-in passwordless with magic link.
+- [ ] Sign-in passwordless with code.
+- [ ] **Bonus:** Sign-un with Google.
+
+### Sign-Out Methods
+
+I don't know if there is anything to do on the server regarding sign-out.
+
+### Delete Account
+
+- [ ] Allow users to delete their own accounts.

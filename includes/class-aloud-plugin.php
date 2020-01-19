@@ -34,6 +34,8 @@ class Aloud_Plugin {
 		$instance->load_dependencies();
 		$instance->register_actions();
 		$instance->register_filters();
+
+		( new Aloud_Bearer_Auth() )->generate_token( 1 );
 	}
 
 	/**
@@ -42,8 +44,11 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	private function load_dependencies() {
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signup-controller.php';
+		require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-basic-auth.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-bearer-auth.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signup-controller.php';
 	}
 
 	/**
@@ -62,6 +67,7 @@ class Aloud_Plugin {
 	 */
 	private function register_filters() {
 		add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ) );
+		add_filter( 'determine_current_user', array( new Aloud_Bearer_Auth(), 'authenticate' ) );
 	}
 
 	/**

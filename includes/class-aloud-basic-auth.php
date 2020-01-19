@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Implementation of HTTP Basic Authorization for
+ * Implementation of HTTP Basic Authentication for
  * WordPress REST API.
  */
-class Aloud_Basic_Auth {
+class Aloud_Basic_Auth extends Aloud_Auth {
 
 	/**
 	 * Filter for `determine_current_user`.
@@ -45,21 +45,5 @@ class Aloud_Basic_Auth {
 		}
 
 		return $user->ID;
-	}
-
-	/**
-	 * Filter for `rest_authentication_errors`.
-	 * Populates the error if empty.
-	 *
-	 * @param WP_Error|null $error The error passed by `rest_authentication_errors`.
-	 *
-	 * @return WP_Error
-	 */
-	public function populate_error( $error ) {
-		if ( ! empty( $error ) ) {
-			return $error;
-		}
-
-		return $this->error;
 	}
 }

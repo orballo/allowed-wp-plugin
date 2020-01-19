@@ -1,6 +1,8 @@
 <?php
 /**
  * Plugin Name: Aloud
+ * Description: Registration and authentication for the REST API.
+ * Author: Eduardo Campaña
  */
 
 require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-plugin.php';
