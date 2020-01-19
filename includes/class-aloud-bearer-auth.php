@@ -12,6 +12,28 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
  */
 class Aloud_Bearer_Auth extends Aloud_Auth {
 	/**
+	 * Secret key used to generate JWT tokens.
+	 *
+	 * @var string
+	 */
+	private $secret_key;
+
+	/**
+	 * Algorithm used to sign JWT tokens.
+	 *
+	 * @var Sha256|null
+	 */
+	private $signer;
+
+	/**
+	 * Constructor function.
+	 */
+	public function __construct() {
+		$this->secret_key = 'aloud-secret-key';
+		$this->signer     = new Sha256();
+	}
+
+	/**
 	 * Filter for `determine_current_user`.
 	 *
 	 * @param int|false $user_id The user id if authenticated.
@@ -44,21 +66,34 @@ class Aloud_Bearer_Auth extends Aloud_Auth {
 
 			return false;
 		}
-		var_dump( 'hello' );
-		// try {
-			$token = $this->validate_token( $token );
-			var_dump( $token );
-		// } catch ( Exception $_ ) {
-		// $this->error = new WP_Error(
-		// 'aloud_invalid_auth_token',
-		// 'Authorization token invalid.',
-		// array('status' => 401 )
-		// );
 
-		// add_filter( 'rest_authentication_errors', array( $this, 'populate_error' ) );
+		$is_valid_token = false;
 
-		// return false;
-		// }
+		try {
+			list($is_valid_token, $user_id) = $this->validate_token( $token );
+		} catch ( Exception $_ ) {
+			$this->error = new WP_Error(
+				'aloud_invalid_auth_token',
+				'Authorization token invalid.',
+				array('status' => 401 )
+			);
+
+			add_filter( 'rest_authentication_errors', array( $this, 'populate_error' ) );
+
+			return false;
+		}
+
+		if ( ! $is_valid_token || ! $user_id ) {
+			$this->error = new WP_Error(
+				'aloud_invalid_auth_token',
+				'Authorization token invalid.',
+				array('status' => 401 )
+			);
+
+			add_filter( 'rest_authentication_errors', array( $this, 'populate_error' ) );
+
+			return false;
+		}
 
 		return $user_id;
 	}
@@ -71,16 +106,14 @@ class Aloud_Bearer_Auth extends Aloud_Auth {
 	 * @return string
 	 */
 	public function generate_token( int $user_id ): string {
-		$secret_key = 'aloud-secret-key';
-		$time       = time();
-		$signer     = new Sha256();
+		$time = time();
 
 		$token = ( new Builder() )
 			->issuedAt( $time )
 			->canOnlyBeUsedAfter( $time )
 			->expiresAt( $time + ( 3600 * 24 * 365 ) )
 			->withClaim( 'uid', $user_id )
-			->getToken( $signer, new Key( $secret_key ) );
+			->getToken( $this->signer, new Key( $this->secret_key ) );
 
 		return $token;
 	}
@@ -90,12 +123,18 @@ class Aloud_Bearer_Auth extends Aloud_Auth {
 	 *
 	 * @param string $token The token to be validated.
 	 *
-	 * @return bool
+	 * @return array(bool, int)
 	 */
-	public function validate_token( string $token ): bool {
+	public function validate_token( string $token ) {
 		$data  = new ValidationData();
 		$token = ( new Parser() )->parse( $token );
 
-		return $token->validate( $data );
+		return array(
+			$token->validate( $data ) && $token->verify(
+				$this->signer,
+				$this->secret_key
+			),
+			$token->getClaim( 'uid', false ),
+		);
 	}
 }

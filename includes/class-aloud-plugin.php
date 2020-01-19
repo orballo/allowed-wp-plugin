@@ -35,7 +35,7 @@ class Aloud_Plugin {
 		$instance->register_actions();
 		$instance->register_filters();
 
-		( new Aloud_Bearer_Auth() )->generate_token( 1 );
+		var_dump( ( new Aloud_Bearer_Auth() )->generate_token( 3 ) );
 	}
 
 	/**
