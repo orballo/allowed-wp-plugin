@@ -10,9 +10,9 @@ class Aloud_Basic_Auth extends Aloud_Auth {
 	 * Filter for `determine_current_user`.
 	 * Checks for credentials and authenticates the user.
 	 *
-	 * @param number|false $user_id The user id if authenticated.
+	 * @param int|false $user_id The user id if authenticated.
 	 *
-	 * @return number|false
+	 * @return int|false
 	 */
 	public function authenticate( $user_id ) {
 		// Checks that the user is not already authenticated.

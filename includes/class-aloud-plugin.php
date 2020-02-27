@@ -34,8 +34,6 @@ class Aloud_Plugin {
 		$instance->load_dependencies();
 		$instance->register_actions();
 		$instance->register_filters();
-
-		var_dump( ( new Aloud_Bearer_Auth() )->generate_token( 3 ) );
 	}
 
 	/**
@@ -47,8 +45,10 @@ class Aloud_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-basic-auth.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-cookie-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-bearer-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signup-controller.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signin-controller.php';
 	}
 
 	/**
@@ -58,6 +58,7 @@ class Aloud_Plugin {
 	 */
 	private function register_actions() {
 		add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
+		add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
 	}
 
 	/**
@@ -66,8 +67,13 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	private function register_filters() {
-		add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ) );
-		add_filter( 'determine_current_user', array( new Aloud_Bearer_Auth(), 'authenticate' ) );
+		// Removes the filters related to the default cookie authentication.
+		remove_filter( 'determine_current_user', 'wp_validate_auth_cookie' );
+		remove_filter( 'determine_current_user', 'wp_validate_logged_in_cookie', 20 );
+		remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
+
+		add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth(), 'authenticate' ), 10 );
+		add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ), 11 );
 	}
 
 	/**

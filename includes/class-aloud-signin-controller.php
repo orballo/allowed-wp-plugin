@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Controller for the `/aloud/v1/signup` route
+ * Controller for the `/aloud/v1/signin` route
  * in the REST API.
  */
-class Aloud_Signup_Controller extends WP_REST_Controller {
+class Aloud_Signin_Controller extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -28,11 +28,11 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	 */
 	public function __construct( $plugin_name, $plugin_version ) {
 		$this->namespace = "{$plugin_name}/${plugin_version}";
-		$this->rest_base = 'signup';
+		$this->rest_base = 'signin';
 	}
 
 	/**
-	 * Registers `POST /aloud/v1/signup` route.
+	 * Registers `POST /aloud/v1/signin` route.
 	 *
 	 * @return void
 	 */
@@ -62,15 +62,6 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 							return sanitize_text_field( $password );
 						},
 					),
-					'email'    => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's email." ),
-						'validate_callback' => array( $this, 'validate_email' ),
-						'sanitize_callback' => function ( $email ) {
-							return sanitize_email( $email );
-						},
-					),
 					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
 				),
 			)
@@ -78,22 +69,28 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Register a new user.
+	 * Undocumented function
 	 *
 	 * @param WP_REST_Request $request A WP request object.
 	 *
 	 * @return WP_REST_Response
 	 */
 	public function create_item( $request ) {
-		list('username' => $username,'email' => $email) = $request->get_params();
+		list('username' => $username,'password' => $password) = $request->get_params();
 
-		$user_id = register_new_user( $username, $email );
+		$user = wp_authenticate(
+			$username,
+			$password
+		);
 
-		$user     = get_user_by( 'id', $user_id );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		wp_set_auth_cookie( $user->ID, true );
+
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
-
-		$response->set_status( 201 );
 
 		return $response;
 	}
@@ -188,7 +185,7 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'rest_signup_prepare_user', $response, $user, $request );
+		return apply_filters( 'rest_signin_prepare_user', $response, $user, $request );
 	}
 
 	/**
@@ -200,11 +197,11 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	 */
 	public function validate_username( $username ) {
 		if ( empty( $username ) ) {
-			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` parameter cannot be empty.' );
+			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` parameter cannot be empty.' );
 		}
 
-		if ( username_exists( $username ) ) {
-			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` already exists.' );
+		if ( ! username_exists( $username ) ) {
+			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` doesn\'t exists.' );
 		}
 	}
 
@@ -217,11 +214,11 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	 */
 	public function validate_password( $password ) {
 		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_signup_invalid_passowrd', 'The `password` parameter cannot be empty.' );
+			return new WP_Error( 'aloud_signin_invalid_passowrd', 'The `password` parameter cannot be empty.' );
 		}
 
 		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
+			return new WP_Error( 'aloud_signin_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
 		}
 	}
 
@@ -233,11 +230,11 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	 */
 	public function validate_email( $email ) {
 		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` parameter must be a valid email address.' );
+			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` parameter must be a valid email address.' );
 		}
 
 		if ( email_exists( $email ) ) {
-			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` already exists.' );
+			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` already exists.' );
 		}
 	}
 
