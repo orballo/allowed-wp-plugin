@@ -48,11 +48,11 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 
 		$origin = esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) );
 
-		if ( ! wp_http_validate_url( $origin ) ) {
+		list('host' => $origin) = wp_parse_url( $origin );
+
+		if ( empty( $origin ) ) {
 			return false;
 		}
-
-		list('host' => $origin) = wp_parse_url( $origin );
 
 		if ( ! in_array( $origin, $this->origins, true ) ) {
 			return false;
@@ -73,11 +73,11 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 
 		$referer = esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) );
 
-		if ( ! wp_http_validate_url( $referer ) ) {
+		list('host' => $referer) = wp_parse_url( $referer );
+
+		if ( empty( $referer ) ) {
 			return false;
 		}
-
-		list('host' => $referer) = wp_parse_url( $referer );
 
 		if ( ! in_array( $referer, $this->origins, true ) ) {
 			return false;
