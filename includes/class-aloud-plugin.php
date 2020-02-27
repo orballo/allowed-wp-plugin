@@ -33,6 +33,8 @@ class Aloud_Plugin {
 
 		$instance->load_dependencies();
 		$instance->register_actions();
+		$instance->register_filters();
+		$instance->remove_filters();
 	}
 
 	/**
@@ -56,9 +58,10 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	public function register_actions() {
-		add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
-		add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
-		add_action( 'rest_api_init', array($this, 'register_filters' ) );
+		if ( is_rest() ) {
+			add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
+		}
 	}
 
 	/**
@@ -67,13 +70,24 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	public function register_filters() {
-		// Removes the filters related to the default cookie authentication.
-		remove_filter( 'determine_current_user', 'wp_validate_auth_cookie' );
-		remove_filter( 'determine_current_user', 'wp_validate_logged_in_cookie', 20 );
-		remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
+		if ( is_rest() ) {
+			add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth(), 'authenticate' ), 10 );
+			add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ), 11 );
+		}
+	}
 
-		add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth(), 'authenticate' ), 10 );
-		add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ), 11 );
+	/**
+	 * Remove filters.
+	 *
+	 * @return void
+	 */
+	public function remove_filters() {
+		if ( is_rest() ) {
+			// Removes the filters related to the default cookie authentication.
+			remove_filter( 'determine_current_user', 'wp_validate_auth_cookie' );
+			remove_filter( 'determine_current_user', 'wp_validate_logged_in_cookie', 20 );
+			remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
+		}
 	}
 
 	/**

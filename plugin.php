@@ -5,6 +5,32 @@
  * Author: Eduardo Campaña
  */
 
+if ( ! function_exists( 'is_rest' ) ) {
+	/**
+	 * Checks if the request is a REST API request.
+	 *
+	 * @return boolean
+	 */
+	function is_rest() {
+		$prefix = rest_get_url_prefix();
+
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return true;
+		}
+
+		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			$uri     = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+			$pattern = "/^\/{$prefix}/";
+
+			if ( preg_match( $pattern, $uri ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
 require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-plugin.php';
 
 register_activation_hook( __FILE__, array( 'Aloud_Plugin', 'activate' ) );
