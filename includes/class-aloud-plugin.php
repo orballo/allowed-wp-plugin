@@ -33,7 +33,6 @@ class Aloud_Plugin {
 
 		$instance->load_dependencies();
 		$instance->register_actions();
-		$instance->register_filters();
 	}
 
 	/**
@@ -41,7 +40,7 @@ class Aloud_Plugin {
 	 *
 	 * @return void
 	 */
-	private function load_dependencies() {
+	public function load_dependencies() {
 		require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-basic-auth.php';
@@ -56,9 +55,10 @@ class Aloud_Plugin {
 	 *
 	 * @return void
 	 */
-	private function register_actions() {
+	public function register_actions() {
 		add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
 		add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
+		add_action( 'rest_api_init', array($this, 'register_filters' ) );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Aloud_Plugin {
 	 *
 	 * @return void
 	 */
-	private function register_filters() {
+	public function register_filters() {
 		// Removes the filters related to the default cookie authentication.
 		remove_filter( 'determine_current_user', 'wp_validate_auth_cookie' );
 		remove_filter( 'determine_current_user', 'wp_validate_logged_in_cookie', 20 );

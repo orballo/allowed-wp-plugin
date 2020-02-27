@@ -5,13 +5,7 @@
 ### Authentication Methods
 
 - [x] HTTP Basic Authentication.
-- [ ] Bearer Token Authentication with JWT.
-  - [ ] Stateless.
-  - [ ] Refresh Token.
-  - [ ] Blacklist Token.
-- [ ] Authentication with sessions.
-- [ ] Authentication with cookies for the same domain/subdomains.
-- [ ] **Bonus:** Authentication with OAuth2.
+- [x] Cookie and Origin Authentication.
 
 ### Sign-Up Methods
 
@@ -23,7 +17,7 @@
 
 ### Sign-In Methods
 
-- [ ] Sign-in with username and password.
+- [x] Sign-in with username and password.
 - [ ] Sign-in with email and password.
 - [ ] Sign-in passwordless with magic link.
 - [ ] Sign-in passwordless with code.
