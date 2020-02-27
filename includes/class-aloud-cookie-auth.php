@@ -29,7 +29,7 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 			return $user_id;
 		}
 
-		if ( ! $this->is_valid_origin() ) {
+		if ( ! $this->is_valid_origin() && ! $this->is_valid_referer() ) {
 			return $user_id;
 		}
 
@@ -55,6 +55,31 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 		list('host' => $origin) = wp_parse_url( $origin );
 
 		if ( ! in_array( $origin, $this->origins, true ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate the Referer header of the request.
+	 *
+	 * @return boolean
+	 */
+	private function is_valid_referer() {
+		if ( ! isset( $_SERVER['HTTP_REFERER'] ) ) {
+			return false;
+		}
+
+		$referer = esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) );
+
+		if ( ! wp_http_validate_url( $referer ) ) {
+			return false;
+		}
+
+		list('host' => $referer) = wp_parse_url( $referer );
+
+		if ( ! in_array( $referer, $this->origins, true ) ) {
 			return false;
 		}
 
