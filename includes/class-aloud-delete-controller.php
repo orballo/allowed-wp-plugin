@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Controller for the `/aloud/v1/signin` route
+ * Controller for the `/aloud/v1/delete` route
  * in the REST API.
  */
-class Aloud_Signin_Controller extends WP_REST_Controller {
+class Aloud_Delete_Controller extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -28,11 +28,11 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	 */
 	public function __construct( $plugin_name, $plugin_version ) {
 		$this->namespace = "{$plugin_name}/${plugin_version}";
-		$this->rest_base = 'signin';
+		$this->rest_base = 'delete';
 	}
 
 	/**
-	 * Registers `POST /aloud/v1/signin` route.
+	 * Registers `POST /aloud/v1/delete` route.
 	 *
 	 * @return void
 	 */
@@ -41,8 +41,8 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 			$this->namespace,
 			$this->rest_base,
 			array(
-				'methods'  => WP_Rest_Server::CREATABLE,
-				'callback' => array( $this, 'create_item' ),
+				'methods'  => WP_Rest_Server::DELETABLE,
+				'callback' => array( $this, 'delete_item' ),
 				'args'     => array(
 					'username' => array(
 						'required'          => true,
@@ -69,28 +69,45 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Log in a user.
+	 * Delete the logged in user.
 	 *
 	 * @param WP_REST_Request $request A WP request object.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function create_item( $request ) {
+	public function delete_item( $request ) {
 		list('username' => $username,'password' => $password) = $request->get_params();
 
-		$user = wp_authenticate(
-			$username,
-			$password
-		);
-
-		if ( is_wp_error( $user ) ) {
-			return $user;
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error(
+				'aloud_delete_not_logged_in',
+				'Cannot delete the user because the user is not logged in.',
+				array('status' => 401 )
+			);
 		}
 
-		wp_set_auth_cookie( $user->ID, true );
+		$user = wp_get_current_user();
+
+		if ( $username !== $user->user_login || ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
+			return new WP_Error(
+				'aloud_delete_wrong_user',
+				'Cannot delete the account of another user.',
+				array('status' => 401 )
+			);
+		};
 
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		if ( ! wp_delete_user( $user->ID ) ) {
+			return new WP_Error(
+				'aloud_delete_error',
+				'Error while trying to delete the user.',
+				array('status' => 500 )
+			);
+		};
 
 		return $response;
 	}
@@ -183,9 +200,14 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 
 		$data = $this->filter_response_by_context( $data, $request['context'] );
 
+		$data = array(
+			'deleted'  => true,
+			'previous' => $data,
+		);
+
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'rest_signin_prepare_user', $response, $user, $request );
+		return apply_filters( 'aloud_signin_prepare_user', $response, $user, $request );
 	}
 
 	/**

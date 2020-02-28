@@ -33,7 +33,9 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 			return $user_id;
 		}
 
-		return wp_validate_logged_in_cookie( $user_id );
+		$user_id = wp_validate_logged_in_cookie( $user_id );
+
+		return $user_id;
 	}
 
 	/**
