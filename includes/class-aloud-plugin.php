@@ -51,6 +51,7 @@ class Aloud_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signup-controller.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signin-controller.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-delete-controller.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-validate-controller.php';
 	}
 
 	/**
@@ -63,6 +64,7 @@ class Aloud_Plugin {
 			add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
 			add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
 			add_action( 'rest_api_init', array(new Aloud_Delete_Controller( $this->name, $this->version ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Aloud_Validate_Controller( $this->name, $this->version ), 'register_routes' ) );
 		}
 	}
 
