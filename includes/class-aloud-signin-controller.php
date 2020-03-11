@@ -77,7 +77,7 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	 */
 	public function create_item( $request ) {
 		list('username' => $username,'password' => $password) = $request->get_params();
-		
+
 		// TODO: prevent signin from cross origin.
 
 		$user = wp_authenticate(

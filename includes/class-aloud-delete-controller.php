@@ -96,9 +96,6 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 			);
 		};
 
-		$response = $this->prepare_item_for_response( $user, $request );
-		$response = rest_ensure_response( $response );
-
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 
 		if ( ! wp_delete_user( $user->ID ) ) {
@@ -108,6 +105,11 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 				array('status' => 500 )
 			);
 		};
+
+		wp_clear_auth_cookie();
+
+		$response = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $response );
 
 		return $response;
 	}

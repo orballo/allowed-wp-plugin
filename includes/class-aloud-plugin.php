@@ -78,12 +78,11 @@ class Aloud_Plugin {
 	public function register_filters() {
 		if ( is_rest() ) {
 			add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth(), 'authenticate' ), 10 );
-			add_filter( 'determine_current_user', array( new Aloud_Basic_Auth(), 'authenticate' ), 11 );
 		}
 	}
 
 	/**
-	 * Remove filters.
+	 * Remove default filters.
 	 *
 	 * @return void
 	 */

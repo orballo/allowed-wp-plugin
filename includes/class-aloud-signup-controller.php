@@ -85,11 +85,21 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function create_item( $request ) {
-		list('username' => $username,'email' => $email) = $request->get_params();
+		list('username' => $username,'password' => $password,'email' => $email) = $request->get_params();
+
+		// TODO: prevent signup from cross origin.
 
 		$user_id = register_new_user( $username, $email );
 
-		$user     = get_user_by( 'id', $user_id );
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		$user = get_user_by( 'id', $user_id );
+
+		reset_password( $user, $password );
+		wp_set_auth_cookie( $user_id, true );
+
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
 
