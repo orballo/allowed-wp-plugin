@@ -187,7 +187,7 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'rest_signin_prepare_user', $response, $user, $request );
+		return apply_filters( 'aloud_signin_prepare_user', $response, $user, $request );
 	}
 
 	/**
@@ -221,22 +221,6 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 
 		if ( false !== strpos( $password, '\\' ) ) {
 			return new WP_Error( 'aloud_signin_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
-		}
-	}
-
-	/**
-	 * Validates the email parameter.
-	 *
-	 * @param string $email The user's email.
-	 * @return WP_Error|void
-	 */
-	public function validate_email( $email ) {
-		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` parameter must be a valid email address.' );
-		}
-
-		if ( email_exists( $email ) ) {
-			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` already exists.' );
 		}
 	}
 

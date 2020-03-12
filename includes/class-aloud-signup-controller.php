@@ -198,7 +198,7 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'rest_signup_prepare_user', $response, $user, $request );
+		return apply_filters( 'aloud_signup_prepare_user', $response, $user, $request );
 	}
 
 	/**

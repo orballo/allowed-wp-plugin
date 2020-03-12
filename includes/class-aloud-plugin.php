@@ -43,11 +43,8 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	public function load_dependencies() {
-		require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-basic-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-cookie-auth.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-bearer-auth.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signup-controller.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signin-controller.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-signout-controller.php';

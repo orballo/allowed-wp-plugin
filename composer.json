@@ -13,9 +13,6 @@
     "phpcs": "vendor/bin/phpcs",
     "phpcbf": "vendor/bin/phpcbf"
   },
-  "require": {
-    "lcobucci/jwt": "^3.3"
-  },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.5",
     "wp-coding-standards/wpcs": "^2.2",

@@ -44,15 +44,6 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 				'methods'  => WP_Rest_Server::DELETABLE,
 				'callback' => array( $this, 'delete_item' ),
 				'args'     => array(
-					'username' => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's username." ),
-						'validate_callback' => array( $this, 'validate_username' ),
-						'sanitize_callback' => function ( $username ) {
-							return sanitize_user( $username, true );
-						},
-					),
 					'password' => array(
 						'required'          => true,
 						'type'              => 'string',
@@ -76,7 +67,7 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function delete_item( $request ) {
-		list('username' => $username,'password' => $password) = $request->get_params();
+		list('password' => $password) = $request->get_params();
 
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
@@ -88,10 +79,10 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 
 		$user = wp_get_current_user();
 
-		if ( $username !== $user->user_login || ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
+		if ( ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
 			return new WP_Error(
-				'aloud_delete_wrong_user',
-				'Cannot delete the account of another user.',
+				'aloud_delete_invalid_password',
+				'Cannot delete the account because the password is not valid.',
 				array('status' => 401 )
 			);
 		};
@@ -209,24 +200,7 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'aloud_signin_prepare_user', $response, $user, $request );
-	}
-
-	/**
-	 * Validates the username parameter.
-	 *
-	 * @param string $username The user's username.
-	 *
-	 * @return WP_Error|void
-	 */
-	public function validate_username( $username ) {
-		if ( empty( $username ) ) {
-			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` parameter cannot be empty.' );
-		}
-
-		if ( ! username_exists( $username ) ) {
-			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` doesn\'t exists.' );
-		}
+		return apply_filters( 'aloud_delete_prepare_user', $response, $user, $request );
 	}
 
 	/**
@@ -238,27 +212,11 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 	 */
 	public function validate_password( $password ) {
 		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_signin_invalid_passowrd', 'The `password` parameter cannot be empty.' );
+			return new WP_Error( 'aloud_delete_invalid_passowrd', 'The `password` parameter cannot be empty.' );
 		}
 
 		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_signin_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
-		}
-	}
-
-	/**
-	 * Validates the email parameter.
-	 *
-	 * @param string $email The user's email.
-	 * @return WP_Error|void
-	 */
-	public function validate_email( $email ) {
-		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` parameter must be a valid email address.' );
-		}
-
-		if ( email_exists( $email ) ) {
-			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` already exists.' );
+			return new WP_Error( 'aloud_delete_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
 		}
 	}
 

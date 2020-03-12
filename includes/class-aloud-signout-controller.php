@@ -166,7 +166,7 @@ class Aloud_Signout_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'rest_signin_prepare_user', $response, $user, $request );
+		return apply_filters( 'aloud_signout_prepare_user', $response, $user, $request );
 	}
 
 	/**
