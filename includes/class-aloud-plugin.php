@@ -5,7 +5,7 @@
  *
  * Contains all the logic needed to interact with WordPress.
  * Loads dependencies, registers actions and filters, and
- * provides with static functions that to handle the WordPress
+ * provides with static functions to handle the WordPress
  * plugin hooks (activate, deactivate and uninstall).
  */
 class Aloud_Plugin {
@@ -93,7 +93,7 @@ class Aloud_Plugin {
 	}
 
 	/**
-	 * Handler for `register_actvation_hook()`.
+	 * Handler for `register_activation_hook()`.
 	 *
 	 * @return void
 	 */
