@@ -31,6 +31,17 @@ if ( ! function_exists( 'is_rest' ) ) {
 	}
 }
 
+if ( ! function_exists( 'is_login' ) ) {
+	/**
+	 * Check if the current request is for the login page.
+	 *
+	 * @return boolean
+	 */
+	function is_login() {
+		return isset( $_SERVER['SCRIPT_NAME'] ) && stripos( esc_url_raw( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ), strrchr( wp_login_url(), '/' ) ) !== false;
+	}
+}
+
 require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-plugin.php';
 
 register_activation_hook( __FILE__, array( 'Aloud_Plugin', 'activate' ) );

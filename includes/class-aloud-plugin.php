@@ -24,6 +24,13 @@ class Aloud_Plugin {
 	public $version = 'v1';
 
 	/**
+	 * Allowed hosts.
+	 *
+	 * @var array
+	 */
+	public $allowed_hosts = array('wp.aloud.local', 'www.aloud.local', 'aloud.local' );
+
+	/**
 	 * Runs the plugin.
 	 *
 	 * @return void
@@ -58,6 +65,9 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	public function register_actions() {
+		add_action( 'init', array($this, 'redirect_blog_to_admin' ) );
+		add_action( 'init', array($this, 'block_non_admin_users' ) );
+
 		if ( is_rest() ) {
 			add_action( 'rest_api_init', array(new Aloud_Signup_Controller( $this->name, $this->version ), 'register_routes' ) );
 			add_action( 'rest_api_init', array(new Aloud_Signin_Controller( $this->name, $this->version ), 'register_routes' ) );
@@ -73,8 +83,10 @@ class Aloud_Plugin {
 	 * @return void
 	 */
 	public function register_filters() {
+		add_filter( 'allowed_redirect_hosts', array($this, 'add_allowed_redirect_hosts' ) );
+
 		if ( is_rest() ) {
-			add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth(), 'authenticate' ), 10 );
+			add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth( $this->allowed_hosts ), 'authenticate' ), 10 );
 		}
 	}
 
@@ -91,6 +103,43 @@ class Aloud_Plugin {
 			remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
 		}
 	}
+
+
+	/**
+	 * Hook for `allowed_redirect_hosts` filter.
+	 *
+	 * @param array $hosts Array of already allowed hosts.
+	 *
+	 * @return array
+	 */
+	public function add_allowed_redirect_hosts( $hosts ) {
+		return array_merge( $hosts, $this->allowed_hosts );
+	}
+
+	/**
+	 * Redirect non admin pages to /wp-admin.
+	 *
+	 * @return void
+	 */
+	public function redirect_blog_to_admin() {
+		if ( ! is_admin() && ! is_login() && ! is_rest() ) {
+			wp_safe_redirect( site_url() . '/wp-admin' );
+			exit;
+		}
+	}
+
+	/**
+	 * Redirect non admin users from /wp-admin to aloud.local
+	 *
+	 * @return void
+	 */
+	public function block_non_admin_users() {
+		if ( is_admin() && is_user_logged_in() && ! current_user_can( 'administrator' ) && ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			wp_safe_redirect( 'https://aloud.local:3000' );
+			exit;
+		}
+	}
+
 
 	/**
 	 * Handler for `register_activation_hook()`.

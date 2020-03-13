@@ -17,6 +17,7 @@
   <rule ref="WordPress">
     <config name="minimum_supported_wp_version" value="5.0" />
     <exclude name="Squiz.Commenting.FileComment.Missing" />
+    <exclude name="Squiz.Commenting.FileComment.MissingPackageTag" />
     <exclude name="WordPress.Arrays.ArrayDeclarationSpacing.NoSpaceAfterArrayOpener" />
   </rule>
   <rule ref="PHPCompatibilityWP">

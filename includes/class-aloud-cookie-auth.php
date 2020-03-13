@@ -10,7 +10,16 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 	 *
 	 * @var array
 	 */
-	public $origins = array('wp.aloud.local', 'www.aloud.local', 'aloud.local' );
+	public $origins;
+
+	/**
+	 * Constructor that sets up the allowed origins.
+	 *
+	 * @param array $allowed_hosts An array of the allowed hosts.
+	 */
+	public function __construct( $allowed_hosts ) {
+		$this->origins = $allowed_hosts;
+	}
 
 	/**
 	 * Filter for `determine_current_user`.
