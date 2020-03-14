@@ -6,19 +6,19 @@
  */
 class Aloud_Cookie_Auth extends Aloud_Auth {
 	/**
-	 * Array of valid origins for authentication.
+	 * Is allowed host.
 	 *
 	 * @var array
 	 */
-	public $origins;
+	public $is_allowed_host;
 
 	/**
-	 * Constructor that sets up the allowed origins.
+	 * Constructor that sets up the object.
 	 *
-	 * @param array $allowed_hosts An array of the allowed hosts.
+	 * @param array $is_allowed_host Is an allowed host.
 	 */
-	public function __construct( $allowed_hosts ) {
-		$this->origins = $allowed_hosts;
+	public function __construct( $is_allowed_host ) {
+		$this->is_allowed_host = $is_allowed_host;
 	}
 
 	/**
@@ -38,62 +38,12 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 			return $user_id;
 		}
 
-		if ( ! $this->is_valid_origin() && ! $this->is_valid_referer() ) {
+		if ( ! $this->is_allowed_host ) {
 			return $user_id;
 		}
 
 		$user_id = wp_validate_logged_in_cookie( $user_id );
 
 		return $user_id;
-	}
-
-	/**
-	 * Validate the Origin header of the request.
-	 *
-	 * @return boolean
-	 */
-	private function is_valid_origin() {
-		if ( ! isset( $_SERVER['HTTP_ORIGIN'] ) ) {
-			return false;
-		}
-
-		$origin = esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) );
-
-		list('host' => $origin) = wp_parse_url( $origin );
-
-		if ( empty( $origin ) ) {
-			return false;
-		}
-
-		if ( ! in_array( $origin, $this->origins, true ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Validate the Referer header of the request.
-	 *
-	 * @return boolean
-	 */
-	private function is_valid_referer() {
-		if ( ! isset( $_SERVER['HTTP_REFERER'] ) ) {
-			return false;
-		}
-
-		$referer = esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) );
-
-		list('host' => $referer) = wp_parse_url( $referer );
-
-		if ( empty( $referer ) ) {
-			return false;
-		}
-
-		if ( ! in_array( $referer, $this->origins, true ) ) {
-			return false;
-		}
-
-		return true;
 	}
 }

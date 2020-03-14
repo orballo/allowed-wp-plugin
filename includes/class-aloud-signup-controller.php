@@ -21,14 +21,23 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	public $rest_base;
 
 	/**
+	 * Is allowed host.
+	 *
+	 * @var string
+	 */
+	public $is_allowed_host;
+
+	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
 	 * @param string $plugin_version The version of the plugin.
+	 * @param bool   $is_allowed_host Is allowed host.
 	 */
-	public function __construct( $plugin_name, $plugin_version ) {
-		$this->namespace = "{$plugin_name}/${plugin_version}";
-		$this->rest_base = 'signup';
+	public function __construct( $plugin_name, $plugin_version, $is_allowed_host ) {
+		$this->namespace       = "{$plugin_name}/${plugin_version}";
+		$this->rest_base       = 'signup';
+		$this->is_allowed_host = $is_allowed_host;
 	}
 
 	/**
@@ -87,7 +96,9 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	public function create_item( $request ) {
 		list('username' => $username,'password' => $password,'email' => $email) = $request->get_params();
 
-		// TODO: prevent signup from cross origin.
+		if ( ! $this->is_allowed_host ) {
+			return new WP_Error( 'aloud_host_not_allowed', 'The host of the request is not allowed.' );
+		}
 
 		$user_id = register_new_user( $username, $email );
 

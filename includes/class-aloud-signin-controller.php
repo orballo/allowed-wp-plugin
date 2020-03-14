@@ -21,14 +21,23 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	public $rest_base;
 
 	/**
+	 * Is valid host.
+	 *
+	 * @var bool
+	 */
+	public $is_allowed_host;
+
+	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
 	 * @param string $plugin_version The version of the plugin.
+	 * @param bool   $is_allowed_host Indicates if the request origin is valid.
 	 */
-	public function __construct( $plugin_name, $plugin_version ) {
-		$this->namespace = "{$plugin_name}/${plugin_version}";
-		$this->rest_base = 'signin';
+	public function __construct( $plugin_name, $plugin_version, $is_allowed_host ) {
+		$this->namespace       = "{$plugin_name}/${plugin_version}";
+		$this->rest_base       = 'signin';
+		$this->is_allowed_host = $is_allowed_host;
 	}
 
 	/**
@@ -78,7 +87,9 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	public function create_item( $request ) {
 		list('username' => $username,'password' => $password) = $request->get_params();
 
-		// TODO: prevent signin from cross origin.
+		if ( ! $this->is_allowed_host ) {
+			return new WP_Error( 'aloud_host_not_allowed', 'The host of the request is not allowed.' );
+		}
 
 		$user = wp_authenticate(
 			$username,
