@@ -62,15 +62,6 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 							return sanitize_user( $username, true );
 						},
 					),
-					'password' => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's password." ),
-						'validate_callback' => array( $this, 'validate_password' ),
-						'sanitize_callback' => function ( $password ) {
-							return sanitize_text_field( $password );
-						},
-					),
 					'email'    => array(
 						'required'          => true,
 						'type'              => 'string',
@@ -78,6 +69,15 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 						'validate_callback' => array( $this, 'validate_email' ),
 						'sanitize_callback' => function ( $email ) {
 							return sanitize_email( $email );
+						},
+					),
+					'password' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's password." ),
+						'validate_callback' => array( $this, 'validate_password' ),
+						'sanitize_callback' => function ( $password ) {
+							return sanitize_text_field( $password );
 						},
 					),
 					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
@@ -223,27 +223,6 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		if ( empty( $username ) ) {
 			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` parameter cannot be empty.' );
 		}
-
-		if ( username_exists( $username ) ) {
-			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` already exists.' );
-		}
-	}
-
-	/**
-	 * Validates the password parameter.
-	 *
-	 * @param string $password The user's password.
-	 *
-	 * @return WP_Error|void
-	 */
-	public function validate_password( $password ) {
-		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_signup_invalid_passowrd', 'The `password` parameter cannot be empty.' );
-		}
-
-		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
-		}
 	}
 
 	/**
@@ -256,9 +235,22 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 		if ( ! is_email( $email ) ) {
 			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` parameter must be a valid email address.' );
 		}
+	}
 
-		if ( email_exists( $email ) ) {
-			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` already exists.' );
+	/**
+	 * Validates the password parameter.
+	 *
+	 * @param string $password The user's password.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_password( $password ) {
+		if ( empty( $password ) ) {
+			return new WP_Error( 'aloud_signup_invalid_password', 'The `password` parameter cannot be empty.' );
+		}
+
+		if ( false !== strpos( $password, '\\' ) ) {
+			return new WP_Error( 'aloud_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
 		}
 	}
 

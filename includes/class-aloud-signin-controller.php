@@ -51,15 +51,24 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 			$this->rest_base,
 			array(
 				'methods'  => WP_Rest_Server::CREATABLE,
-				'callback' => array( $this, 'create_item' ),
+				'callback' => array( $this, 'signin' ),
 				'args'     => array(
 					'username' => array(
-						'required'          => true,
+						'required'          => false,
 						'type'              => 'string',
 						'description'       => esc_html( "The user's username." ),
 						'validate_callback' => array( $this, 'validate_username' ),
 						'sanitize_callback' => function ( $username ) {
 							return sanitize_user( $username, true );
+						},
+					),
+					'email'    => array(
+						'required'          => false,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's email." ),
+						'validate_callback' => array( $this, 'validate_email' ),
+						'sanitize_callback' => function ( $email ) {
+							return sanitize_email( $email );
 						},
 					),
 					'password' => array(
@@ -84,17 +93,20 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function create_item( $request ) {
-		list('username' => $username,'password' => $password) = $request->get_params();
+	public function signin( $request ) {
+		$params = $request->get_params();
 
 		if ( ! $this->is_allowed_host ) {
 			return new WP_Error( 'aloud_host_not_allowed', 'The host of the request is not allowed.' );
 		}
 
-		$user = wp_authenticate(
-			$username,
-			$password
-		);
+		if ( isset( $params['username'] ) ) {
+			$user = wp_authenticate_username_password( null, $params['username'], $params['password'] );
+		} elseif ( isset( $params['email'] ) ) {
+			$user = wp_authenticate_email_password( null, $params['email'], $params['password'] );
+		} else {
+			return new WP_Error( 'aloud_signin_missing_credentials', 'At least an username or an email must be provided.' );
+		}
 
 		if ( is_wp_error( $user ) ) {
 			return $user;
@@ -212,9 +224,17 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 		if ( empty( $username ) ) {
 			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` parameter cannot be empty.' );
 		}
+	}
 
-		if ( ! username_exists( $username ) ) {
-			return new WP_Error( 'aloud_signin_invalid_username', 'The `username` doesn\'t exists.' );
+	/**
+	 * Validates the email parameter.
+	 *
+	 * @param string $email The user's email.
+	 * @return WP_Error|void
+	 */
+	public function validate_email( $email ) {
+		if ( ! is_email( $email ) ) {
+			return new WP_Error( 'aloud_signin_invalid_email', 'The `email` parameter must be a valid email address.' );
 		}
 	}
 
