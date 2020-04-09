@@ -9,12 +9,12 @@
 ### Sign-Up Methods
 
 - [x] Sign-up with username, email and password.
-- [ ] Sign-up passwordless with temporary code.
+- [x] Sign-up passwordless with temporary code.
 
 ### Sign-In Methods
 
 - [x] Sign-in with username and password.
-- [ ] Sign-in with email and password.
+- [x] Sign-in with email and password.
 - [ ] Sign-in passwordless with temporary code.
 
 ### Sign-Out Methods

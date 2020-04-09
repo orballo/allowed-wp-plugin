@@ -42,6 +42,44 @@ if ( ! function_exists( 'is_login' ) ) {
 	}
 }
 
+if ( ! function_exists( 'aloud_generate_code' ) ) {
+	/**
+	 * Generate code for passwordless authentication.
+	 *
+	 * @param string $transient The name of the transient where the code will be stored.
+	 *
+	 * @param int    $expiration (optional) The expiration date of the transient.
+	 *
+	 * @return string
+	 */
+	function aloud_generate_code( $transient, $expiration = 60 * 5 ) {
+		$code      = strtoupper( wp_generate_password( 16, false ) );
+		$hash_code = wp_hash_password( $code );
+		set_transient( $transient, $hash_code, $expiration );
+		return $code;
+	}
+}
+
+if ( ! function_exists( 'aloud_validate_code' ) ) {
+	/**
+	 * Validate code for passwordless authentication.
+	 *
+	 * @param string $transient The name of the transient where the code is stored.
+	 *
+	 * @param string $code The code to be validated.
+	 *
+	 * @return boolean
+	 */
+	function aloud_validate_code( $transient, $code ) {
+		$hash_code     = get_transient( $transient );
+		$is_valid_code = $hash_code ? wp_check_password( $code, $hash_code ) : false;
+		if ( $is_valid_code ) {
+			delete_transient( $transient );
+		}
+		return $is_valid_code;
+	}
+}
+
 require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-plugin.php';
 
 register_activation_hook( __FILE__, array( 'Aloud_Plugin', 'activate' ) );
