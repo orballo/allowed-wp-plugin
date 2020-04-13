@@ -15,7 +15,7 @@
 
 - [x] Sign-in with username and password.
 - [x] Sign-in with email and password.
-- [ ] Sign-in passwordless with temporary code.
+- [x] Sign-in passwordless with temporary code.
 
 ### Sign-Out Methods
 
