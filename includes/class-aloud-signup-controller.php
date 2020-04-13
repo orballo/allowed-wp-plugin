@@ -218,7 +218,7 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 			}
 		}
 
-		$code = aloud_generate_code( $transient );
+		$code = aloud_generate_code( $transient, $expiration );
 
 		$email_sent = wp_mail(
 			$email,
