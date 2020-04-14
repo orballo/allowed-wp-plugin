@@ -112,6 +112,7 @@ class Aloud_Plugin {
 
 		if ( is_rest() ) {
 			add_filter( 'determine_current_user', array( new Aloud_Cookie_Auth( $this->is_allowed_host ), 'authenticate' ), 10 );
+			add_filter( 'rest_pre_serve_request', array( $this, 'expose_custom_headers' ) );
 		}
 	}
 
@@ -213,6 +214,15 @@ class Aloud_Plugin {
 			wp_safe_redirect( 'https://aloud.local:3000' );
 			exit;
 		}
+	}
+
+	/**
+	 * Expose Aloud custom headers on the responses.
+	 *
+	 * @return void
+	 */
+	public function expose_custom_headers() {
+		header( 'Access-Control-Expose-Headers: X-Aloud-Step', false );
 	}
 
 

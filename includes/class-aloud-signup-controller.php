@@ -211,6 +211,7 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 
 				$response = $this->prepare_item_for_response( $user, $request );
 				$response->set_status( 201 );
+				$response->set_headers( array('X-Aloud-Step' => 'verification' ) );
 
 				return $response;
 			} else {
@@ -226,14 +227,17 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 			'This is the verification code to sign up: ' . $code
 		);
 
-		$response = array(
-			'username'   => $username,
-			'email'      => $email,
-			'expiration' => $expiration,
-			'email_sent' => $email_sent,
+		$response = rest_ensure_response(
+			array(
+				'username'   => $username,
+				'email'      => $email,
+				'expiration' => $expiration,
+				'email_sent' => $email_sent,
+			)
 		);
+		$response->set_headers( array('X-Aloud-Step' => 'generation' ) );
 
-		return rest_ensure_response( $response );
+		return $response;
 	}
 
 	/**
