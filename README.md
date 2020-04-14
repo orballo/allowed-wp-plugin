@@ -24,4 +24,4 @@
 ### Delete Account
 
 - [x] Allow users to delete their own accounts.
-- [ ] Allow users to delete their own accounts passwordless with temporary code.
+- [x] Allow users to delete their own accounts passwordless with temporary code.
