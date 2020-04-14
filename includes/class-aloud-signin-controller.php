@@ -222,8 +222,9 @@ class Aloud_Signin_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response(
 			array(
+				'username'         => $user->user_login,
+				'email'            => $user->user_email,
 				'used_credentials' => $credentials,
-				"$credentials"     => $params[ $credentials ],
 				'expiration'       => $expiration,
 				'email_sent'       => $email_sent,
 			)

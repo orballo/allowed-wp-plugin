@@ -33,16 +33,18 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 
 	/**
 	 * Registers `POST /aloud/v1/delete` route.
+	 * Registers `POST /aloud/v1/delete/passwordless` route.
 	 *
 	 * @return void
 	 */
 	public function register_routes() {
+		// Registers `/aloud/v1/delete`.
 		register_rest_route(
 			$this->namespace,
 			$this->rest_base,
 			array(
 				'methods'  => WP_Rest_Server::DELETABLE,
-				'callback' => array( $this, 'delete_item' ),
+				'callback' => array( $this, 'delete' ),
 				'args'     => array(
 					'password' => array(
 						'required'          => true,
@@ -57,6 +59,28 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 				),
 			)
 		);
+
+		// Registers `/aloud/v1/delete/passwordless`.
+		register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/passwordless',
+			array(
+				'methods'  => WP_Rest_Server::DELETABLE,
+				'callback' => array( $this, 'delete_passwordless' ),
+				'args'     => array(
+					'code'    => array(
+						'required'          => false,
+						'type'              => 'string',
+						'description'       => esc_html( 'The verification code sent to the email address.' ),
+						'validate_callback' => array( $this, 'validate_code' ),
+						'sanitize_callback' => function ( $code ) {
+							return sanitize_text_field( $code );
+						},
+					),
+					'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -66,7 +90,7 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function delete_item( $request ) {
+	public function delete( $request ) {
 		list('password' => $password) = $request->get_params();
 
 		if ( ! is_user_logged_in() ) {
@@ -101,6 +125,73 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
+
+		return $response;
+	}
+
+	/**
+	 * Delete the logged in user.
+	 *
+	 * @param WP_REST_Request $request A WP request object.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function delete_passwordless( $request ) {
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error(
+				'aloud_delete_not_logged_in',
+				'Cannot delete the user because the user is not logged in.',
+				array('status' => 401 )
+			);
+		}
+
+		$params = $request->get_params();
+		$user   = wp_get_current_user();
+
+		$transient_hash = wp_hash( $user->user_email );
+		$transient      = 'aloud_delete_' . $transient_hash;
+		$expiration     = 60 * 5;
+
+		if ( isset( $params['code'] ) ) {
+			$is_valid_code = aloud_validate_code( $transient, $params['code'] );
+			if ( $is_valid_code ) {
+				require_once ABSPATH . 'wp-admin/includes/user.php';
+
+				if ( ! wp_delete_user( $user->ID ) ) {
+					return new WP_Error(
+						'aloud_delete_error',
+						'Error while trying to delete the user.',
+						array('status' => 500 )
+					);
+				};
+
+				wp_clear_auth_cookie();
+
+				$response = $this->prepare_item_for_response( $user, $request );
+
+				return $response;
+			} else {
+				return new WP_Error( 'aloud_delete_invalid_code', 'The code provided for delete is not valid.' );
+			}
+		}
+
+		$code = aloud_generate_code( $transient, $expiration );
+
+		$email_sent = wp_mail(
+			$user->user_email,
+			'Aloud: Verification code to delete account',
+			'This is the verification code to delete account: ' . $code
+		);
+
+		$response = rest_ensure_response(
+			array(
+				'username'   => $user->user_login,
+				'email'      => $user->user_email,
+				'expiration' => $expiration,
+				'email_sent' => $email_sent,
+			)
+		);
+		$response->set_headers( array('X-Aloud-Step' => 'generation' ) );
 
 		return $response;
 	}
@@ -217,6 +308,23 @@ class Aloud_Delete_Controller extends WP_REST_Controller {
 
 		if ( false !== strpos( $password, '\\' ) ) {
 			return new WP_Error( 'aloud_delete_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
+		}
+	}
+
+	/**
+	 * Validates the code parameter.
+	 *
+	 * @param string $code Code sent to the user email for deleting account.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_code( $code ) {
+		if ( empty( $code ) ) {
+			return new WP_Error( 'aloud_delete_invalid_code', 'The `code` parameter cannot be empty.' );
+		}
+
+		if ( ! ctype_alnum( $code ) ) {
+			return new WP_Error( 'aloud_delete_invalid_code', 'The `code` paramater can only contain alphanumeric characters' );
 		}
 	}
 
