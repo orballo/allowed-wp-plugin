@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Controller for the `/aloud/v1/signup` route
+ * Controller for the `/aloud/v1/validate` route
  * in the REST API.
  */
-class Aloud_Signup_Controller extends WP_REST_Controller {
+class Aloud_Auth_Validate extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -21,221 +21,55 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 	public $rest_base;
 
 	/**
-	 * Is allowed host.
-	 *
-	 * @var string
-	 */
-	public $is_allowed_host;
-
-	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
 	 * @param string $plugin_version The version of the plugin.
-	 * @param bool   $is_allowed_host Is allowed host.
 	 */
-	public function __construct( $plugin_name, $plugin_version, $is_allowed_host ) {
-		$this->namespace       = "{$plugin_name}/${plugin_version}";
-		$this->rest_base       = 'signup';
-		$this->is_allowed_host = $is_allowed_host;
+	public function __construct( $plugin_name, $plugin_version ) {
+		$this->namespace = "{$plugin_name}/${plugin_version}";
+		$this->rest_base = 'validate';
 	}
 
 	/**
-	 * Registers `POST /aloud/v1/signup` route.
-	 * Registers `POST /aloud/v1/signup/passwordless` route.
+	 * Registers `POST /aloud/v1/validate` route.
 	 *
 	 * @return void
 	 */
 	public function register_routes() {
-		// Registers `/aloud/v1/signup`.
 		register_rest_route(
 			$this->namespace,
 			$this->rest_base,
 			array(
-				'methods'  => WP_Rest_Server::CREATABLE,
-				'callback' => array( $this, 'signup' ),
+				'methods'  => WP_Rest_Server::READABLE,
+				'callback' => array( $this, 'validate' ),
 				'args'     => array(
-					'username' => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's username." ),
-						'validate_callback' => array( $this, 'validate_username' ),
-						'sanitize_callback' => function ( $username ) {
-							return sanitize_user( $username, true );
-						},
-					),
-					'email'    => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's email." ),
-						'validate_callback' => array( $this, 'validate_email' ),
-						'sanitize_callback' => function ( $email ) {
-							return sanitize_email( $email );
-						},
-					),
-					'password' => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's password." ),
-						'validate_callback' => array( $this, 'validate_password' ),
-						'sanitize_callback' => function ( $password ) {
-							return sanitize_text_field( $password );
-						},
-					),
-					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
-				),
-			)
-		);
-
-		// Registers `/aloud/v1/signup/passwordless`.
-		register_rest_route(
-			$this->namespace,
-			$this->rest_base . '/passwordless',
-			array(
-				'methods'  => WP_Rest_Server::CREATABLE,
-				'callback' => array($this, 'signup_passwordless' ),
-				'args'     => array(
-					'username' => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's username." ),
-						'validate_callback' => array( $this, 'validate_username' ),
-						'sanitize_callback' => function ( $username ) {
-							return sanitize_user( $username, true );
-						},
-					),
-					'email'    => array(
-						'required'          => true,
-						'type'              => 'string',
-						'description'       => esc_html( "The user's email." ),
-						'validate_callback' => array( $this, 'validate_email' ),
-						'sanitize_callback' => function ( $email ) {
-							return sanitize_email( $email );
-						},
-					),
-					'code'     => array(
-						'required'          => false,
-						'type'              => 'string',
-						'description'       => esc_html( 'The verification code sent to the email address.' ),
-						'validate_callback' => array($this, 'validate_code' ),
-						'sanitize_callback' => function ( $code ) {
-							return sanitize_text_field( $code );
-						},
-					),
-					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
+					'context' => $this->get_context_param( array( 'default' => 'view' ) ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * Register a new user.
+	 * Log in a user.
 	 *
 	 * @param WP_REST_Request $request A WP request object.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function signup( $request ) {
-		if ( ! $this->is_allowed_host ) {
-			return new WP_Error( 'aloud_host_not_allowed', 'The host of the request is not allowed.' );
+	public function validate( $request ) {
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error(
+				'aloud_auth_validate_not_logged_in',
+				'No user logged in.',
+				array('status' => 401 )
+			);
 		}
 
-		list('username' => $username,'password' => $password,'email' => $email) = $request->get_params();
-
-		$user_id = wp_create_user( $username, $password, $email );
-
-		if ( is_wp_error( $user_id ) ) {
-			return $user_id;
-		}
-
-		wp_mail(
-			$email,
-			'Welcome to Aloud',
-			'Your account at Aloud was successfully created with the following data:' .
-			"\nUsername: " . $username . "\nEmail: " . $email
-		);
-
-		$user = get_user_by( 'id', $user_id );
-
-		wp_set_auth_cookie( $user_id, true );
+		$user = wp_get_current_user();
 
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
-
-		$response->set_status( 201 );
-
-		return $response;
-	}
-
-	/**
-	 * Register a new user without password.
-	 *
-	 * @param WP_REST_Request $request A WP request object.
-	 *
-	 * @return WP_REST_Response
-	 */
-	public function signup_passwordless( $request ) {
-		if ( ! $this->is_allowed_host ) {
-			return new WP_Error( 'aloud_host_not_allowed', 'The host of the request is not allowed.' );
-		}
-
-		$params = $request->get_params();
-
-		$username       = $params['username'];
-		$email          = $params['email'];
-		$transient_hash = wp_hash( $username . $email );
-
-		$transient  = 'aloud_signup_' . $transient_hash;
-		$expiration = 60 * 5;
-
-		if ( isset( $params['code'] ) ) {
-			$is_valid_code = aloud_validate_code( $transient, $params['code'] );
-
-			if ( $is_valid_code ) {
-				$user_id = wp_create_user( $username, wp_generate_password(), $email );
-
-				if ( is_wp_error( $user_id ) ) {
-					return $user_id;
-				}
-
-				wp_mail(
-					$email,
-					'Welcome to Aloud',
-					'Your account at Aloud was successfully created with the following data:' .
-					"\nUsername: " . $username . "\nEmail: " . $email
-				);
-
-				$user = get_user_by( 'id', $user_id );
-
-				wp_set_auth_cookie( $user_id, true );
-
-				$response = $this->prepare_item_for_response( $user, $request );
-				$response->set_status( 201 );
-				$response->set_headers( array('X-Aloud-Step' => 'verification' ) );
-
-				return $response;
-			} else {
-				return new WP_Error( 'aloud_signup_invalid_code', 'The code provided for signup is not valid.' );
-			}
-		}
-
-		$code = aloud_generate_code( $transient, $expiration );
-
-		$email_sent = wp_mail(
-			$email,
-			'Aloud: Verification code to sign up',
-			'This is the verification code to sign up: ' . $code
-		);
-
-		$response = rest_ensure_response(
-			array(
-				'username'   => $username,
-				'email'      => $email,
-				'expiration' => $expiration,
-				'email_sent' => $email_sent,
-			)
-		);
-		$response->set_headers( array('X-Aloud-Step' => 'generation' ) );
 
 		return $response;
 	}
@@ -330,66 +164,7 @@ class Aloud_Signup_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'aloud_signup_prepare_user', $response, $user, $request );
-	}
-
-	/**
-	 * Validates the username parameter.
-	 *
-	 * @param string $username The user's username.
-	 *
-	 * @return WP_Error|void
-	 */
-	public function validate_username( $username ) {
-		if ( empty( $username ) ) {
-			return new WP_Error( 'aloud_signup_invalid_username', 'The `username` parameter cannot be empty.' );
-		}
-	}
-
-	/**
-	 * Validates the email parameter.
-	 *
-	 * @param string $email The user's email.
-	 * @return WP_Error|void
-	 */
-	public function validate_email( $email ) {
-		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'aloud_signup_invalid_email', 'The `email` parameter must be a valid email address.' );
-		}
-	}
-
-	/**
-	 * Validates the password parameter.
-	 *
-	 * @param string $password The user's password.
-	 *
-	 * @return WP_Error|void
-	 */
-	public function validate_password( $password ) {
-		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_signup_invalid_password', 'The `password` parameter cannot be empty.' );
-		}
-
-		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_signup_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
-		}
-	}
-
-	/**
-	 * Validates the code parameter.
-	 *
-	 * @param string $code Code sent to the user email for registration.
-	 *
-	 * @return WP_Error|void
-	 */
-	public function validate_code( $code ) {
-		if ( empty( $code ) ) {
-			return new WP_Error( 'aloud_signup_invalid_code', 'The `code` parameter cannot be empty.' );
-		}
-
-		if ( ! ctype_alnum( $code ) ) {
-			return new WP_Error( 'aloud_signup_invalid_code', 'The `code` paramater can only contain alphanumeric characters' );
-		}
+		return apply_filters( 'aloud_auth_validate_prepare_user', $response, $user, $request );
 	}
 
 	/**

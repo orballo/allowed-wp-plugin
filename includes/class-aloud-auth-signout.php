@@ -4,7 +4,7 @@
  * Controller for the `/aloud/v1/signout` route
  * in the REST API.
  */
-class Aloud_Signout_Controller extends WP_REST_Controller {
+class Aloud_Auth_Signout extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -42,7 +42,7 @@ class Aloud_Signout_Controller extends WP_REST_Controller {
 			$this->rest_base,
 			array(
 				'methods'  => WP_Rest_Server::READABLE,
-				'callback' => array( $this, 'get_item' ),
+				'callback' => array( $this, 'signout' ),
 				'args'     => array(
 					'context' => $this->get_context_param( array( 'default' => 'view' ) ),
 				),
@@ -57,10 +57,10 @@ class Aloud_Signout_Controller extends WP_REST_Controller {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function get_item( $request ) {
+	public function signout( $request ) {
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
-				'aloud_validate_not_logged_in',
+				'aloud_auth_validate_not_logged_in',
 				'No user logged in.',
 				array('status' => 401 )
 			);
@@ -166,7 +166,7 @@ class Aloud_Signout_Controller extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'aloud_signout_prepare_user', $response, $user, $request );
+		return apply_filters( 'aloud_auth_signout_prepare_user', $response, $user, $request );
 	}
 
 	/**

@@ -4,7 +4,14 @@
  * Implementation of WP Cookie Authentication for
  * WordPress REST API.
  */
-class Aloud_Cookie_Auth extends Aloud_Auth {
+class Aloud_Auth_Cookie {
+	/**
+	 * Authentication error.
+	 *
+	 * @var WP_Error
+	 */
+	public $error;
+
 	/**
 	 * Is allowed host.
 	 *
@@ -45,5 +52,21 @@ class Aloud_Cookie_Auth extends Aloud_Auth {
 		$user_id = wp_validate_logged_in_cookie( $user_id );
 
 		return $user_id;
+	}
+
+	/**
+	 * Filter for `rest_authentication_errors`.
+	 * Populates the error if empty.
+	 *
+	 * @param WP_Error|null $error The error passed by `rest_authentication_errors`.
+	 *
+	 * @return WP_Error
+	 */
+	public function populate_error( $error ) {
+		if ( ! empty( $error ) ) {
+			return $error;
+		}
+
+		return $this->error;
 	}
 }

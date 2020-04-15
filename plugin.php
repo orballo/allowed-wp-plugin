@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Aloud
+ * Plugin Name: Aloud Auth
  * Description: Registration and authentication for the REST API.
  * Author: Eduardo Campaña
  */
@@ -42,7 +42,7 @@ if ( ! function_exists( 'is_login' ) ) {
 	}
 }
 
-if ( ! function_exists( 'aloud_generate_code' ) ) {
+if ( ! function_exists( 'aloud_auth_generate_code' ) ) {
 	/**
 	 * Generate code for passwordless authentication.
 	 *
@@ -52,7 +52,7 @@ if ( ! function_exists( 'aloud_generate_code' ) ) {
 	 *
 	 * @return string
 	 */
-	function aloud_generate_code( $transient, $expiration = 60 * 5 ) {
+	function aloud_auth_generate_code( $transient, $expiration = 60 * 5 ) {
 		$code      = strtoupper( wp_generate_password( 16, false ) );
 		$hash_code = wp_hash_password( $code );
 		set_transient( $transient, $hash_code, $expiration );
@@ -60,7 +60,7 @@ if ( ! function_exists( 'aloud_generate_code' ) ) {
 	}
 }
 
-if ( ! function_exists( 'aloud_validate_code' ) ) {
+if ( ! function_exists( 'aloud_auth_validate_code' ) ) {
 	/**
 	 * Validate code for passwordless authentication.
 	 *
@@ -70,7 +70,7 @@ if ( ! function_exists( 'aloud_validate_code' ) ) {
 	 *
 	 * @return boolean
 	 */
-	function aloud_validate_code( $transient, $code ) {
+	function aloud_auth_validate_code( $transient, $code ) {
 		$hash_code     = get_transient( $transient );
 		$is_valid_code = $hash_code ? wp_check_password( $code, $hash_code ) : false;
 		if ( $is_valid_code ) {
@@ -80,10 +80,10 @@ if ( ! function_exists( 'aloud_validate_code' ) ) {
 	}
 }
 
-require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-plugin.php';
+require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-auth.php';
 
-register_activation_hook( __FILE__, array( 'Aloud_Plugin', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Aloud_Plugin', 'deactivate' ) );
-register_uninstall_hook( __FILE__, array( 'Aloud_Plugin', 'uninstall' ) );
+register_activation_hook( __FILE__, array( 'Aloud_Auth', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Aloud_Auth', 'deactivate' ) );
+register_uninstall_hook( __FILE__, array( 'Aloud_Auth', 'uninstall' ) );
 
-Aloud_Plugin::run();
+Aloud_Auth::run();
