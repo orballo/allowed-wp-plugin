@@ -47,7 +47,7 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 				'callback' => array( $this, 'delete' ),
 				'args'     => array(
 					'password' => array(
-						'required'          => true,
+						'required'          => false,
 						'type'              => 'string',
 						'description'       => esc_html( "The user's password." ),
 						'validate_callback' => array( $this, 'validate_password' ),
@@ -91,34 +91,28 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function delete( $request ) {
-		list('password' => $password) = $request->get_params();
-
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error(
-				'aloud_auth_delete_not_logged_in',
-				'Cannot delete the user because the user is not logged in.',
-				array('status' => 401 )
+			return Aloud_Auth_Errors::not_authenticated();
+		}
+
+		$params = $request->get_params();
+
+		if ( ! isset( $params['password'] ) ) {
+			return Aloud_Auth_Errors::missing_params(
+				'The param `password` must be provided.'
 			);
 		}
 
 		$user = wp_get_current_user();
 
-		if ( ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
-			return new WP_Error(
-				'aloud_auth_delete_invalid_password',
-				'Cannot delete the account because the password is not valid.',
-				array('status' => 401 )
-			);
+		if ( ! wp_check_password( $params['password'], $user->user_pass, $user->ID ) ) {
+			return Aloud_Auth_Errors::invalid_credentials();
 		};
 
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 
 		if ( ! wp_delete_user( $user->ID ) ) {
-			return new WP_Error(
-				'aloud_auth_delete_error',
-				'Error while trying to delete the user.',
-				array('status' => 500 )
-			);
+			return Aloud_Auth_Errors::cannot_delete_account();
 		};
 
 		wp_clear_auth_cookie();
@@ -138,11 +132,7 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 	 */
 	public function delete_passwordless( $request ) {
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error(
-				'aloud_auth_delete_not_logged_in',
-				'Cannot delete the user because the user is not logged in.',
-				array('status' => 401 )
-			);
+			return Aloud_Auth_Errors::not_authenticated();
 		}
 
 		$params = $request->get_params();
@@ -158,11 +148,7 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 				require_once ABSPATH . 'wp-admin/includes/user.php';
 
 				if ( ! wp_delete_user( $user->ID ) ) {
-					return new WP_Error(
-						'aloud_auth_delete_error',
-						'Error while trying to delete the user.',
-						array('status' => 500 )
-					);
+					return Aloud_Auth_Errors::cannot_delete_account();
 				};
 
 				wp_clear_auth_cookie();
@@ -171,7 +157,7 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 
 				return $response;
 			} else {
-				return new WP_Error( 'aloud_auth_delete_invalid_code', 'The code provided for delete is not valid.' );
+				return Aloud_Auth_Errors::invalid_credentials();
 			}
 		}
 
@@ -303,28 +289,36 @@ class Aloud_Auth_Delete extends WP_REST_Controller {
 	 */
 	public function validate_password( $password ) {
 		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_auth_delete_invalid_passowrd', 'The `password` parameter cannot be empty.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `password` parameter cannot be empty.'
+			);
 		}
 
 		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_auth_delete_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'Passwords cannot contain the `\` (backslash) character.'
+			);
 		}
 	}
 
 	/**
 	 * Validates the code parameter.
 	 *
-	 * @param string $code Code sent to the user email for deleting account.
+	 * @param string $code Code sent to the user email for registration.
 	 *
 	 * @return WP_Error|void
 	 */
 	public function validate_code( $code ) {
 		if ( empty( $code ) ) {
-			return new WP_Error( 'aloud_auth_delete_invalid_code', 'The `code` parameter cannot be empty.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `code` parameter cannot be empty.'
+			);
 		}
 
 		if ( ! ctype_alnum( $code ) ) {
-			return new WP_Error( 'aloud_auth_delete_invalid_code', 'The `code` paramater can only contain alphanumeric characters' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `code` parameter is invalid.'
+			);
 		}
 	}
 

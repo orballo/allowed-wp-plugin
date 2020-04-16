@@ -407,7 +407,7 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 
 		if ( ! ctype_alnum( $code ) ) {
 			return Aloud_Auth_Errors::invalid_params(
-				'The `code` paramater can only contain alphanumeric characters.'
+				'The `code` paramater is invalid.'
 			);
 		}
 	}

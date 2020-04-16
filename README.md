@@ -7,7 +7,7 @@
 - [x] Improve signin errors.
 - [x] Improve signup errors.
 - [x] Improve signout errors.
-- [ ] Improve delete errors.
+- [x] Improve delete errors.
 - [ ] Improve validate errors.
 
 ## List of error codes
@@ -33,6 +33,12 @@
 - `401` `aloud_auth_not_authenticated`
 
 ### Delete
+
+- `400` `aloud_auth_missing_params`
+- `400` `rest_invalid_param`
+- `401` `aloud_auth_not_authenticated`
+- `401` `aloud_auth_invalid_credentials`
+- `500` `aloud_auth_cannot_delete_account`
 
 ## Goals
 

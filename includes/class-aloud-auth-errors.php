@@ -89,4 +89,17 @@ class Aloud_Auth_Errors {
 			array('status' => 401 )
 		);
 	}
+
+	/**
+	 * Returns an error if user cannot be deleted.
+	 *
+	 * @return WP_Error
+	 */
+	public static function cannot_delete_account() {
+		return new WP_Error(
+			'aloud_auth_cannot_delete_account',
+			'Error while trying to delete the user account.',
+			array('status' => 500 )
+		);
+	}
 }
