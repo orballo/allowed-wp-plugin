@@ -75,4 +75,18 @@ class Aloud_Auth_Errors {
 			array('status' => 403 )
 		);
 	}
+
+
+	/**
+	 * Returns an error for user not logged in.
+	 *
+	 * @return WP_Error
+	 */
+	public static function not_authenticated() {
+		return new WP_Error(
+			'aloud_auth_not_authenticated',
+			'The user is not authenticated.',
+			array('status' => 401 )
+		);
+	}
 }

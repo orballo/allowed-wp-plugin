@@ -6,7 +6,7 @@
 
 - [x] Improve signin errors.
 - [x] Improve signup errors.
-- [ ] Improve signout errors.
+- [x] Improve signout errors.
 - [ ] Improve delete errors.
 - [ ] Improve validate errors.
 
@@ -27,6 +27,12 @@
 - `400` `aloud_auth_existing_username`
 - `401` `aloud_auth_invalid_credentials`
 - `403` `aloud_auth_invalid_host`
+
+### Sign Out
+
+- `401` `aloud_auth_not_authenticated`
+
+### Delete
 
 ## Goals
 
