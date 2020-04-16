@@ -137,39 +137,27 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function signin( $request ) {
 		if ( ! $this->is_allowed_host ) {
-			return new WP_Error(
-				'aloud_auth_invalid_host',
-				'The host of the request is invalid.',
-				array('status' => 403 )
-			);
+			return Aloud_Auth_Errors::invalid_host();
 		}
 
 		$params = $request->get_params();
 
 		if ( ! isset( $params['password'] ) ) {
-			return new WP_Error(
-				'aloud_auth_missing_param',
-				'The param `password` must be provided.',
-				array('status' => 400 )
+			return Aloud_Auth_Errors::missing_params(
+				'The param `password` must be provided.'
 			);
 		} elseif ( isset( $params['username'] ) ) {
 			$user = wp_authenticate_username_password( null, $params['username'], $params['password'] );
 		} elseif ( isset( $params['email'] ) ) {
 			$user = wp_authenticate_email_password( null, $params['email'], $params['password'] );
 		} else {
-			return new WP_Error(
-				'aloud_auth_missing_param',
-				'The param `username` or `email` must be provided.',
-				array('status' => 400 )
+			return Aloud_Auth_Errors::missing_params(
+				'The param `username` or `email` must be provided.'
 			);
 		}
 
 		if ( is_wp_error( $user ) ) {
-			return new WP_Error(
-				'aloud_auth_invalid_credentials',
-				'The credentials provided are invalid.',
-				array('status' => 401 )
-			);
+			return Aloud_Auth_Errors::invalid_credentials();
 		}
 
 		wp_set_auth_cookie( $user->ID, true );
@@ -188,23 +176,25 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function signin_passwordless( $request ) {
 		if ( ! $this->is_allowed_host ) {
-			return new WP_Error( 'aloud_auth_host_not_allowed', 'The host of the request is not allowed.' );
+			return Aloud_Auth_Errors::invalid_host();
 		}
 
 		$params = $request->get_params();
 
 		if ( isset( $params['email'] ) ) {
 			if ( ! email_exists( $params['email'] ) ) {
-				return new WP_Error( 'aloud_auth_signin_invalid_email', 'The email provided does not exist.' );
+				return Aloud_Auth_Errors::invalid_credentials();
 			}
 			$credentials = 'email';
 		} elseif ( isset( $params['username'] ) ) {
 			if ( ! username_exists( $params['username'] ) ) {
-				return new WP_Error( 'aloud_auth_signin_invalid_username', 'The username provided does not exist.' );
+				return Aloud_Auth_Errors::invalid_credentials();
 			}
 			$credentials = 'username';
 		} else {
-			return new WP_Error( 'aloud_auth_signin_missing_credentials', 'At least an username or an email is needed' );
+			return Aloud_Auth_Errors::missing_params(
+				'The param `username` or `email` must be provided.'
+			);
 		}
 
 		$transient_hash = wp_hash( 'email' === $credentials ? $params['email'] : $params['username'] );
@@ -226,7 +216,7 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 
 				return $response;
 			} else {
-				return new WP_Error( 'aloud_auth_signin_invalid_code', 'The code provided for signin is not valid.' );
+				return Aloud_Auth_Errors::invalid_credentials();
 			}
 		}
 
@@ -354,7 +344,9 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function validate_username( $username ) {
 		if ( empty( $username ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_username', 'The `username` parameter cannot be empty.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `username` parameter cannot be empty.'
+			);
 		}
 	}
 
@@ -365,8 +357,16 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 * @return WP_Error|void
 	 */
 	public function validate_email( $email ) {
+		if ( empty( $email ) ) {
+			return Aloud_Auth_Errors::invalid_params(
+				'The `email` parameter cannot be empty.'
+			);
+		}
+
 		if ( ! is_email( $email ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_email', 'The `email` parameter must be a valid email address.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `email` parameter must be a valid email address.'
+			);
 		}
 	}
 
@@ -379,11 +379,15 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function validate_password( $password ) {
 		if ( empty( $password ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_passowrd', 'The `password` parameter cannot be empty.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `password` parameter cannot be empty.'
+			);
 		}
 
 		if ( false !== strpos( $password, '\\' ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_password', 'Passwords cannot contain the `\` (backslash) character.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'Passwords cannot contain the `\` (backslash) character.'
+			);
 		}
 	}
 
@@ -396,11 +400,15 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function validate_code( $code ) {
 		if ( empty( $code ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_code', 'The `code` parameter cannot be empty.' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `code` parameter cannot be empty.'
+			);
 		}
 
 		if ( ! ctype_alnum( $code ) ) {
-			return new WP_Error( 'aloud_auth_signin_invalid_code', 'The `code` paramater can only contain alphanumeric characters' );
+			return Aloud_Auth_Errors::invalid_params(
+				'The `code` paramater can only contain alphanumeric characters.'
+			);
 		}
 	}
 

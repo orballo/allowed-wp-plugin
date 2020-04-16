@@ -75,7 +75,7 @@ class Aloud_Auth {
 	 * @return void
 	 */
 	public function load_dependencies() {
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-errors.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-cookie.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-signup.php';
 		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-signin.php';
