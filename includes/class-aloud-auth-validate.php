@@ -59,11 +59,7 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	 */
 	public function validate( $request ) {
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error(
-				'aloud_auth_validate_not_logged_in',
-				'No user logged in.',
-				array('status' => 401 )
-			);
+			return Aloud_Auth_Errors::not_authenticated();
 		}
 
 		$user = wp_get_current_user();

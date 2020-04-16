@@ -1,44 +1,6 @@
 # Aloud Auth WP Plugin
 
-## TODO
-
-### Errors
-
-- [x] Improve signin errors.
-- [x] Improve signup errors.
-- [x] Improve signout errors.
-- [x] Improve delete errors.
-- [ ] Improve validate errors.
-
-## List of error codes
-
-### Sign In
-
-- `400` `aloud_auth_missing_params`
-- `400` `rest_invalid_param`
-- `401` `aloud_auth_invalid_credentials`
-- `403` `aloud_auth_invalid_host`
-
-### Sign Up
-
-- `400` `aloud_auth_missing_params`
-- `400` `rest_invalid_param`
-- `400` `aloud_auth_existing_email`
-- `400` `aloud_auth_existing_username`
-- `401` `aloud_auth_invalid_credentials`
-- `403` `aloud_auth_invalid_host`
-
-### Sign Out
-
-- `401` `aloud_auth_not_authenticated`
-
-### Delete
-
-- `400` `aloud_auth_missing_params`
-- `400` `rest_invalid_param`
-- `401` `aloud_auth_not_authenticated`
-- `401` `aloud_auth_invalid_credentials`
-- `500` `aloud_auth_cannot_delete_account`
+WordPress plugin for registration and authentication through REST API.
 
 ## Goals
 
@@ -65,3 +27,39 @@
 
 - [x] Allow users to delete their own accounts.
 - [x] Allow users to delete their own accounts passwordless with temporary code.
+
+## Docs
+
+### List of error codes
+
+#### Sign In
+
+- `400` `aloud_auth_missing_params`
+- `400` `rest_invalid_param`
+- `401` `aloud_auth_invalid_credentials`
+- `403` `aloud_auth_invalid_host`
+
+#### Sign Up
+
+- `400` `aloud_auth_missing_params`
+- `400` `rest_invalid_param`
+- `400` `aloud_auth_existing_email`
+- `400` `aloud_auth_existing_username`
+- `401` `aloud_auth_invalid_credentials`
+- `403` `aloud_auth_invalid_host`
+
+#### Sign Out
+
+- `401` `aloud_auth_not_authenticated`
+
+#### Delete
+
+- `400` `aloud_auth_missing_params`
+- `400` `rest_invalid_param`
+- `401` `aloud_auth_not_authenticated`
+- `401` `aloud_auth_invalid_credentials`
+- `500` `aloud_auth_cannot_delete_account`
+
+#### Validate
+
+- `401` `aloud_auth_not_authenticated`
