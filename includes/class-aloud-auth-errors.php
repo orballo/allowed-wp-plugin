@@ -36,6 +36,21 @@ class Aloud_Auth_Errors {
 	}
 
 	/**
+	 * Returns an error for existing credencial.
+	 *
+	 * @param string $credential Type of credential used.
+	 *
+	 * @return WP_Error
+	 */
+	public static function existing_credential( $credential ) {
+		return new WP_Error(
+			"aloud_auth_existing_{$credential}",
+			"That {$credential} is already in use.",
+			array('status' => 400 )
+		);
+	}
+
+	/**
 	 * Returns an error for invalid credentials.
 	 *
 	 * @return WP_Error
