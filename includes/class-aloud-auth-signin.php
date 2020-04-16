@@ -74,7 +74,7 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 						},
 					),
 					'password' => array(
-						'required'          => true,
+						'required'          => false,
 						'type'              => 'string',
 						'description'       => esc_html( "The user's password." ),
 						'validate_callback' => array( $this, 'validate_password' ),
@@ -137,21 +137,39 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 	 */
 	public function signin( $request ) {
 		if ( ! $this->is_allowed_host ) {
-			return new WP_Error( 'aloud_auth_host_not_allowed', 'The host of the request is not allowed.' );
+			return new WP_Error(
+				'aloud_auth_invalid_host',
+				'The host of the request is invalid.',
+				array('status' => 403 )
+			);
 		}
 
 		$params = $request->get_params();
 
-		if ( isset( $params['username'] ) ) {
+		if ( ! isset( $params['password'] ) ) {
+			return new WP_Error(
+				'aloud_auth_missing_param',
+				'The param `password` must be provided.',
+				array('status' => 400 )
+			);
+		} elseif ( isset( $params['username'] ) ) {
 			$user = wp_authenticate_username_password( null, $params['username'], $params['password'] );
 		} elseif ( isset( $params['email'] ) ) {
 			$user = wp_authenticate_email_password( null, $params['email'], $params['password'] );
 		} else {
-			return new WP_Error( 'aloud_auth_signin_missing_credentials', 'At least an username or an email must be provided.' );
+			return new WP_Error(
+				'aloud_auth_missing_param',
+				'The param `username` or `email` must be provided.',
+				array('status' => 400 )
+			);
 		}
 
 		if ( is_wp_error( $user ) ) {
-			return $user;
+			return new WP_Error(
+				'aloud_auth_invalid_credentials',
+				'The credentials provided are invalid.',
+				array('status' => 401 )
+			);
 		}
 
 		wp_set_auth_cookie( $user->ID, true );

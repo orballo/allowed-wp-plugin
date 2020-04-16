@@ -1,4 +1,22 @@
-# Aloud WP Plugin
+# Aloud Auth WP Plugin
+
+## TODO
+
+### Errors
+
+- [x] Improve signin errors.
+- [ ] Improve passwordless signin errors.
+- [ ] Improve signup errors.
+- [ ] Improve passwordless signup errors.
+- [ ] Improve signout errors.
+- [ ] Improve delete errors.
+- [ ] Improve passwordless delete errors.
+
+## List of error codes
+
+- `400` `aloud_auth_missing_param`
+- `401` `aloud_auth_invalid_credentials`
+- `403` `aloud_auth_invalid_host`
 
 ## Goals
 
