@@ -28,6 +28,13 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 	public $is_allowed_host;
 
 	/**
+	 * Instance of a user meta fields object.
+	 *
+	 * @var WP_REST_User_Meta_Fields
+	 */
+	protected $meta;
+
+	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
@@ -38,6 +45,7 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 		$this->namespace       = "{$plugin_name}/${plugin_version}";
 		$this->rest_base       = 'signup';
 		$this->is_allowed_host = $is_allowed_host;
+		$this->meta            = new WP_REST_User_Meta_Fields();
 	}
 
 	/**
@@ -605,6 +613,8 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 				'properties'  => $avatar_properties,
 			);
 		}
+
+		$schema['properties']['meta'] = $this->meta->get_field_schema();
 
 		$this->schema = $schema;
 
