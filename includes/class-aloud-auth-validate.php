@@ -21,6 +21,13 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	public $rest_base;
 
 	/**
+	 * Instance of a user meta fields object.
+	 *
+	 * @var WP_REST_User_Meta_Fields
+	 */
+	protected $meta;
+
+	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
@@ -29,6 +36,7 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	public function __construct( $plugin_name, $plugin_version ) {
 		$this->namespace = "{$plugin_name}/${plugin_version}";
 		$this->rest_base = 'validate';
+		$this->meta      = new WP_REST_User_Meta_Fields();
 	}
 
 	/**
@@ -305,6 +313,8 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 				'properties'  => $avatar_properties,
 			);
 		}
+
+		$schema['properties']['meta'] = $this->meta->get_field_schema();
 
 		$this->schema = $schema;
 
