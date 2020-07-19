@@ -28,7 +28,14 @@ class Aloud_Auth {
 	 *
 	 * @var array
 	 */
-	public $allowed_hosts = array('wp.aloud.local', 'aloud.local', 'wp.mori.local', 'mori.local' );
+	public $allowed_hosts = array(
+		'wp.aloud.local',
+		'aloud.local',
+		'wp.mori.local',
+		'mori.local',
+		'wpmori.orballo.dev',
+		'mori.orballo.dev',
+	);
 
 	/**
 	 * Is valid origin.
