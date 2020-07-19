@@ -211,7 +211,7 @@ class Aloud_Auth {
 	 */
 	public function block_non_admin_users() {
 		if ( is_admin() && is_user_logged_in() && ! current_user_can( 'administrator' ) && ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			wp_safe_redirect( 'https://aloud.local:3000' );
+			wp_safe_redirect( 'https://mori.local:3000' );
 			exit;
 		}
 	}
