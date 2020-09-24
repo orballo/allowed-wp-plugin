@@ -188,10 +188,12 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 			return $user_id;
 		}
 
+		$title = get_bloginfo();
+
 		wp_mail(
 			$email,
-			'Welcome to Aloud',
-			'Your account at Aloud was successfully created with the following data:' .
+			'Welcome to ' . $title,
+			'Your account at ' . $title . ' was successfully created with the following data:' .
 			"\nUsername: " . $username . "\nEmail: " . $email
 		);
 
