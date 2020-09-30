@@ -35,6 +35,7 @@ class Aloud_Auth {
 		'mori.local',
 		'wpmori.orballo.dev',
 		'mori.orballo.dev',
+		'yama.orballo.dev',
 	);
 
 	/**
