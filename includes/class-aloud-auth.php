@@ -33,8 +33,7 @@ class Aloud_Auth {
 		'aloud.local',
 		'wp.mori.local',
 		'mori.local',
-		'wpmori.orballo.dev',
-		'mori.orballo.dev',
+		'wpyama.orballo.dev',
 		'yama.orballo.dev',
 	);
 
@@ -207,7 +206,7 @@ class Aloud_Auth {
 	 */
 	public function redirect_blog_to_admin() {
 		if ( ! is_admin() && ! is_login() && ! is_rest() ) {
-			wp_safe_redirect( site_url() . '/wp-admin' );
+			wp_safe_redirect( site_url() . '/wp-admin', 301 );
 			exit;
 		}
 	}
@@ -219,7 +218,8 @@ class Aloud_Auth {
 	 */
 	public function block_non_admin_users() {
 		if ( is_admin() && is_user_logged_in() && ! current_user_can( 'administrator' ) && ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			wp_safe_redirect( 'https://mori.local:3000' );
+			$url = home_url() === 'https://wpyama.orballo.dev' ? 'https://yama.orballo.dev' : home_url();
+			wp_safe_redirect( $url );
 			exit;
 		}
 	}
