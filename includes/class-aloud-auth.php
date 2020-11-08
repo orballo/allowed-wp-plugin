@@ -112,6 +112,8 @@ class Aloud_Auth {
 	 * @return void
 	 */
 	public function register_filters() {
+		add_filter( 'allowed_redirect_hosts', array($this, 'add_allowed_redirect_hosts' ) );
+
 		if ( is_rest() ) {
 			add_filter( 'determine_current_user', array( new Aloud_Auth_Cookie( $this->is_allowed_host ), 'authenticate' ), 10 );
 			add_filter( 'rest_pre_serve_request', array( $this, 'expose_custom_headers' ) );
@@ -181,6 +183,19 @@ class Aloud_Auth {
 
 		return true;
 	}
+
+
+	/**
+	 * Hook for `allowed_redirect_hosts` filter.
+	 *
+	 * @param array $hosts Array of already allowed hosts.
+	 *
+	 * @return array
+	 */
+	public function add_allowed_redirect_hosts( $hosts ) {
+		return array_merge( $hosts, $this->allowed_hosts );
+	}
+
 
 	/**
 	 * Expose Aloud custom headers on the responses.
