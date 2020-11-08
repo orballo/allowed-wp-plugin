@@ -97,9 +97,6 @@ class Aloud_Auth {
 	 * @return void
 	 */
 	public function register_actions() {
-		add_action( 'init', array($this, 'redirect_blog_to_admin' ) );
-		add_action( 'init', array($this, 'block_non_admin_users' ) );
-
 		if ( is_rest() ) {
 			add_action( 'rest_api_init', array(new Aloud_Auth_Signup( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
 			add_action( 'rest_api_init', array(new Aloud_Auth_Signin( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
@@ -115,8 +112,6 @@ class Aloud_Auth {
 	 * @return void
 	 */
 	public function register_filters() {
-		add_filter( 'allowed_redirect_hosts', array($this, 'add_allowed_redirect_hosts' ) );
-
 		if ( is_rest() ) {
 			add_filter( 'determine_current_user', array( new Aloud_Auth_Cookie( $this->is_allowed_host ), 'authenticate' ), 10 );
 			add_filter( 'rest_pre_serve_request', array( $this, 'expose_custom_headers' ) );
@@ -185,43 +180,6 @@ class Aloud_Auth {
 		}
 
 		return true;
-	}
-
-
-	/**
-	 * Hook for `allowed_redirect_hosts` filter.
-	 *
-	 * @param array $hosts Array of already allowed hosts.
-	 *
-	 * @return array
-	 */
-	public function add_allowed_redirect_hosts( $hosts ) {
-		return array_merge( $hosts, $this->allowed_hosts );
-	}
-
-	/**
-	 * Redirect non admin pages to /wp-admin.
-	 *
-	 * @return void
-	 */
-	public function redirect_blog_to_admin() {
-		if ( ! is_admin() && ! is_login() && ! is_rest() ) {
-			wp_safe_redirect( site_url() . '/wp-admin', 301 );
-			exit;
-		}
-	}
-
-	/**
-	 * Redirect non admin users from /wp-admin to aloud.local
-	 *
-	 * @return void
-	 */
-	public function block_non_admin_users() {
-		if ( is_admin() && is_user_logged_in() && ! current_user_can( 'administrator' ) && ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-			$url = home_url() === 'https://wpyama.orballo.dev' ? 'https://yama.orballo.dev' : home_url();
-			wp_safe_redirect( $url );
-			exit;
-		}
 	}
 
 	/**
