@@ -3,6 +3,7 @@
  * Plugin Name: Aloud Auth
  * Description: Registration and authentication for the REST API.
  * Author: Eduardo Campaña
+ * Version: 0.1
  */
 
 if ( ! function_exists( 'is_rest' ) ) {

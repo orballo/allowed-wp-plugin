@@ -230,9 +230,11 @@ class Aloud_Auth_Signin extends WP_REST_Controller {
 
 		$code = aloud_auth_generate_code( $transient, $expiration );
 
+		$title = get_bloginfo();
+
 		$email_sent = wp_mail(
 			$user->user_email,
-			'Aloud: Verification code to sign in',
+			$title . ': Verification code to sign in',
 			'This is the verification code to sign in: ' . $code
 		);
 

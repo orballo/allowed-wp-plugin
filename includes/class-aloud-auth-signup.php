@@ -188,15 +188,6 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 			return $user_id;
 		}
 
-		$title = get_bloginfo();
-
-		wp_mail(
-			$email,
-			'Welcome to ' . $title,
-			'Your account at ' . $title . ' was successfully created with the following data:' .
-			"\nUsername: " . $username . "\nEmail: " . $email
-		);
-
 		$user = get_user_by( 'id', $user_id );
 
 		wp_set_auth_cookie( $user_id, true );
@@ -261,13 +252,6 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 					return $user_id;
 				}
 
-				wp_mail(
-					$email,
-					'Welcome to Aloud',
-					'Your account at Aloud was successfully created with the following data:' .
-					"\nUsername: " . $username . "\nEmail: " . $email
-				);
-
 				$user = get_user_by( 'id', $user_id );
 
 				wp_set_auth_cookie( $user_id, true );
@@ -284,9 +268,11 @@ class Aloud_Auth_Signup extends WP_REST_Controller {
 
 		$code = aloud_auth_generate_code( $transient, $expiration );
 
+		$title = get_bloginfo();
+
 		$email_sent = wp_mail(
 			$email,
-			'Aloud: Verification code to sign up',
+			$title . ': Verification code to sign up',
 			'This is the verification code to sign up: ' . $code
 		);
 
