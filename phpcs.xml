@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="Aloud Coding Standard">
+<ruleset name="Allowed Coding Standard">
   <!-- Included files -->
   <file>plugin.php</file>
   <file>includes</file>

@@ -8,13 +8,13 @@
  * provides with static functions to handle the WordPress
  * plugin hooks (activate, deactivate and uninstall).
  */
-class Aloud_Auth {
+class Allowed {
 	/**
 	 * Plugin's name.
 	 *
 	 * @var string
 	 */
-	public $name = 'aloud';
+	public $name = 'allowed';
 
 	/**
 	 * Plugin's version.
@@ -29,10 +29,8 @@ class Aloud_Auth {
 	 * @var array
 	 */
 	public $allowed_hosts = array(
-		'wp.aloud.local',
-		'aloud.local',
-		'wp.mori.local',
-		'mori.local',
+		'wp.yama.local',
+		'yama.local',
 		'wpyama.orballo.dev',
 		'yama.orballo.dev',
 	);
@@ -82,13 +80,13 @@ class Aloud_Auth {
 	 * @return void
 	 */
 	public function load_dependencies() {
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-errors.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-cookie.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-signup.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-signin.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-signout.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-validate.php';
-		require_once plugin_dir_path( __FILE__ ) . '/class-aloud-auth-delete.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-errors.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-cookie.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-signup.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-signin.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-signout.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-validate.php';
+		require_once plugin_dir_path( __FILE__ ) . '/class-allowed-delete.php';
 	}
 
 	/**
@@ -98,11 +96,11 @@ class Aloud_Auth {
 	 */
 	public function register_actions() {
 		if ( is_rest() ) {
-			add_action( 'rest_api_init', array(new Aloud_Auth_Signup( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
-			add_action( 'rest_api_init', array(new Aloud_Auth_Signin( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
-			add_action( 'rest_api_init', array(new Aloud_Auth_Signout( $this->name, $this->version ), 'register_routes' ) );
-			add_action( 'rest_api_init', array(new Aloud_Auth_Validate( $this->name, $this->version ), 'register_routes' ) );
-			add_action( 'rest_api_init', array(new Aloud_Auth_Delete( $this->name, $this->version ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Allowed_Signup( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Allowed_Signin( $this->name, $this->version, $this->is_allowed_host ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Allowed_Signout( $this->name, $this->version ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Allowed_Validate( $this->name, $this->version ), 'register_routes' ) );
+			add_action( 'rest_api_init', array(new Allowed_Delete( $this->name, $this->version ), 'register_routes' ) );
 		}
 	}
 
@@ -115,7 +113,7 @@ class Aloud_Auth {
 		add_filter( 'allowed_redirect_hosts', array($this, 'add_allowed_redirect_hosts' ) );
 
 		if ( is_rest() ) {
-			add_filter( 'determine_current_user', array( new Aloud_Auth_Cookie( $this->is_allowed_host ), 'authenticate' ), 10 );
+			add_filter( 'determine_current_user', array( new Allowed_Cookie( $this->is_allowed_host ), 'authenticate' ), 10 );
 			add_filter( 'rest_pre_serve_request', array( $this, 'expose_custom_headers' ) );
 		}
 	}
@@ -198,12 +196,12 @@ class Aloud_Auth {
 
 
 	/**
-	 * Expose Aloud custom headers on the responses.
+	 * Expose Allowed custom headers on the responses.
 	 *
 	 * @return void
 	 */
 	public function expose_custom_headers() {
-		header( 'Access-Control-Expose-Headers: X-Aloud-Step', false );
+		header( 'Access-Control-Expose-Headers: X-Allowed-Step', false );
 	}
 
 

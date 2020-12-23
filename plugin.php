@@ -1,9 +1,10 @@
 <?php
 /**
- * Plugin Name: Aloud Auth
+ * Plugin Name: Allowed
  * Description: Registration and authentication for the REST API.
  * Author: Eduardo Campaña
  * Version: 0.1
+ * GitHub Plugin URI: https://github.com/orballo/allowed-wp-plugin
  */
 
 if ( ! function_exists( 'is_rest' ) ) {
@@ -43,7 +44,7 @@ if ( ! function_exists( 'is_login' ) ) {
 	}
 }
 
-if ( ! function_exists( 'aloud_auth_generate_code' ) ) {
+if ( ! function_exists( 'allowed_generate_code' ) ) {
 	/**
 	 * Generate code for passwordless authentication.
 	 *
@@ -53,7 +54,7 @@ if ( ! function_exists( 'aloud_auth_generate_code' ) ) {
 	 *
 	 * @return string
 	 */
-	function aloud_auth_generate_code( $transient, $expiration = 60 * 5 ) {
+	function allowed_generate_code( $transient, $expiration = 60 * 5 ) {
 		$code      = strtoupper( wp_generate_password( 16, false ) );
 		$hash_code = wp_hash_password( $code );
 		set_transient( $transient, $hash_code, $expiration );
@@ -61,7 +62,7 @@ if ( ! function_exists( 'aloud_auth_generate_code' ) ) {
 	}
 }
 
-if ( ! function_exists( 'aloud_auth_validate_code' ) ) {
+if ( ! function_exists( 'allowed_validate_code' ) ) {
 	/**
 	 * Validate code for passwordless authentication.
 	 *
@@ -71,7 +72,7 @@ if ( ! function_exists( 'aloud_auth_validate_code' ) ) {
 	 *
 	 * @return boolean
 	 */
-	function aloud_auth_validate_code( $transient, $code ) {
+	function allowed_validate_code( $transient, $code ) {
 		$hash_code     = get_transient( $transient );
 		$is_valid_code = $hash_code ? wp_check_password( $code, $hash_code ) : false;
 		if ( $is_valid_code ) {
@@ -81,10 +82,10 @@ if ( ! function_exists( 'aloud_auth_validate_code' ) ) {
 	}
 }
 
-require_once plugin_dir_path( __FILE__ ) . '/includes/class-aloud-auth.php';
+require_once plugin_dir_path( __FILE__ ) . '/includes/class-allowed.php';
 
-register_activation_hook( __FILE__, array( 'Aloud_Auth', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Aloud_Auth', 'deactivate' ) );
-register_uninstall_hook( __FILE__, array( 'Aloud_Auth', 'uninstall' ) );
+register_activation_hook( __FILE__, array( 'Allowed', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Allowed', 'deactivate' ) );
+register_uninstall_hook( __FILE__, array( 'Allowed', 'uninstall' ) );
 
-Aloud_Auth::run();
+Allowed::run();

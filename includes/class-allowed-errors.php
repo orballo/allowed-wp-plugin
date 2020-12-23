@@ -3,7 +3,7 @@
 /**
  * Creates errors for different scenarios.
  */
-class Aloud_Auth_Errors {
+class Allowed_Errors {
 
 	/**
 	 * Returns an error for missing params.
@@ -14,7 +14,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function missing_params( $message ) {
 		return new WP_Error(
-			'aloud_auth_missing_params',
+			'allowed_missing_params',
 			$message,
 			array('status' => 400 )
 		);
@@ -29,7 +29,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function invalid_params( $message ) {
 		return new WP_Error(
-			'aloud_auth_invalid_params',
+			'allowed_invalid_params',
 			$message,
 			array('status' => 400 )
 		);
@@ -44,7 +44,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function existing_credential( $credential ) {
 		return new WP_Error(
-			"aloud_auth_existing_{$credential}",
+			"allowed_existing_{$credential}",
 			"That {$credential} is already in use.",
 			array('status' => 400 )
 		);
@@ -57,7 +57,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function invalid_credentials() {
 		return new WP_Error(
-			'aloud_auth_invalid_credentials',
+			'allowed_invalid_credentials',
 			'The credentials provided are invalid.',
 			array('status' => 401 )
 		);
@@ -70,7 +70,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function invalid_host() {
 		return new WP_Error(
-			'aloud_auth_invalid_host',
+			'allowed_invalid_host',
 			'The host of the request is invalid.',
 			array('status' => 403 )
 		);
@@ -84,7 +84,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function not_authenticated() {
 		return new WP_Error(
-			'aloud_auth_not_authenticated',
+			'allowed_not_authenticated',
 			'The user is not authenticated.',
 			array('status' => 401 )
 		);
@@ -97,7 +97,7 @@ class Aloud_Auth_Errors {
 	 */
 	public static function cannot_delete_account() {
 		return new WP_Error(
-			'aloud_auth_cannot_delete_account',
+			'allowed_cannot_delete_account',
 			'Error while trying to delete the user account.',
 			array('status' => 500 )
 		);

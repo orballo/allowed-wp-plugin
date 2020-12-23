@@ -4,7 +4,7 @@
  * Implementation of WP Cookie Authentication for
  * WordPress REST API.
  */
-class Aloud_Auth_Cookie {
+class Allowed_Cookie {
 	/**
 	 * Authentication error.
 	 *

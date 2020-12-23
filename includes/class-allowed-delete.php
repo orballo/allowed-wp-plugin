@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Controller for the `/aloud/v1/validate` route
+ * Controller for the `/allowed/v1/delete` route
  * in the REST API.
  */
-class Aloud_Auth_Validate extends WP_REST_Controller {
+class Allowed_Delete extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -21,13 +21,6 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	public $rest_base;
 
 	/**
-	 * Instance of a user meta fields object.
-	 *
-	 * @var WP_REST_User_Meta_Fields
-	 */
-	protected $meta;
-
-	/**
 	 * Constructor that sets up the namespace and the route.
 	 *
 	 * @param string $plugin_name The name of the plugin.
@@ -35,23 +28,55 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	 */
 	public function __construct( $plugin_name, $plugin_version ) {
 		$this->namespace = "{$plugin_name}/${plugin_version}";
-		$this->rest_base = 'validate';
-		$this->meta      = new WP_REST_User_Meta_Fields();
+		$this->rest_base = 'delete';
 	}
 
 	/**
-	 * Registers `POST /aloud/v1/validate` route.
+	 * Registers `POST /allowed/v1/delete` route.
+	 * Registers `POST /allowed/v1/delete/passwordless` route.
 	 *
 	 * @return void
 	 */
 	public function register_routes() {
+		// Registers `/allowed/v1/delete`.
 		register_rest_route(
 			$this->namespace,
 			$this->rest_base,
 			array(
-				'methods'  => WP_Rest_Server::READABLE,
-				'callback' => array( $this, 'validate' ),
+				'methods'  => WP_Rest_Server::DELETABLE,
+				'callback' => array( $this, 'delete' ),
 				'args'     => array(
+					'password' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'description'       => esc_html( "The user's password." ),
+						'validate_callback' => array( $this, 'validate_password' ),
+						'sanitize_callback' => function ( $password ) {
+							return sanitize_text_field( $password );
+						},
+					),
+					'context'  => $this->get_context_param( array( 'default' => 'view' ) ),
+				),
+			)
+		);
+
+		// Registers `/allowed/v1/delete/passwordless`.
+		register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/passwordless',
+			array(
+				'methods'  => WP_Rest_Server::DELETABLE,
+				'callback' => array( $this, 'delete_passwordless' ),
+				'args'     => array(
+					'code'    => array(
+						'required'          => false,
+						'type'              => 'string',
+						'description'       => esc_html( 'The verification code sent to the email address.' ),
+						'validate_callback' => array( $this, 'validate_code' ),
+						'sanitize_callback' => function ( $code ) {
+							return sanitize_text_field( $code );
+						},
+					),
 					'context' => $this->get_context_param( array( 'default' => 'view' ) ),
 				),
 			)
@@ -59,21 +84,103 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 	}
 
 	/**
-	 * Log in a user.
+	 * Delete the logged in user.
 	 *
 	 * @param WP_REST_Request $request A WP request object.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function validate( $request ) {
+	public function delete( $request ) {
 		if ( ! is_user_logged_in() ) {
-			return Aloud_Auth_Errors::not_authenticated();
+			return Allowed_Errors::not_authenticated();
+		}
+
+		$params = $request->get_params();
+
+		if ( ! isset( $params['password'] ) ) {
+			return Allowed_Errors::missing_params(
+				'The param `password` must be provided.'
+			);
 		}
 
 		$user = wp_get_current_user();
 
+		if ( ! wp_check_password( $params['password'], $user->user_pass, $user->ID ) ) {
+			return Allowed_Errors::invalid_credentials();
+		};
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		if ( ! wp_delete_user( $user->ID ) ) {
+			return Allowed_Errors::cannot_delete_account();
+		};
+
+		wp_clear_auth_cookie();
+
 		$response = $this->prepare_item_for_response( $user, $request );
 		$response = rest_ensure_response( $response );
+
+		return $response;
+	}
+
+	/**
+	 * Delete the logged in user.
+	 *
+	 * @param WP_REST_Request $request A WP request object.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function delete_passwordless( $request ) {
+		if ( ! is_user_logged_in() ) {
+			return Allowed_Errors::not_authenticated();
+		}
+
+		$params = $request->get_params();
+		$user   = wp_get_current_user();
+
+		$transient_hash = wp_hash( $user->user_email );
+		$transient      = 'allowed_delete_' . $transient_hash;
+		$expiration     = 60 * 5;
+
+		if ( isset( $params['code'] ) ) {
+			$is_valid_code = allowed_validate_code( $transient, $params['code'] );
+			if ( $is_valid_code ) {
+				require_once ABSPATH . 'wp-admin/includes/user.php';
+
+				if ( ! wp_delete_user( $user->ID ) ) {
+					return Allowed_Errors::cannot_delete_account();
+				};
+
+				wp_clear_auth_cookie();
+
+				$response = $this->prepare_item_for_response( $user, $request );
+				$response->set_headers( array('X-Allowed-Step' => 'verification' ) );
+
+				return $response;
+			} else {
+				return Allowed_Errors::invalid_credentials();
+			}
+		}
+
+		$code = allowed_generate_code( $transient, $expiration );
+
+		$title = get_bloginfo();
+
+		$email_sent = wp_mail(
+			$user->user_email,
+			$title . ': Verification code to delete account',
+			'This is the verification code to delete account: ' . $code
+		);
+
+		$response = rest_ensure_response(
+			array(
+				'username'   => $user->user_login,
+				'email'      => $user->user_email,
+				'expiration' => $expiration,
+				'email_sent' => $email_sent,
+			)
+		);
+		$response->set_headers( array('X-Allowed-Step' => 'generation' ) );
 
 		return $response;
 	}
@@ -166,9 +273,56 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 
 		$data = $this->filter_response_by_context( $data, $request['context'] );
 
+		$data = array(
+			'deleted'  => true,
+			'previous' => $data,
+		);
+
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'aloud_auth_validate_prepare_user', $response, $user, $request );
+		return apply_filters( 'allowed_delete_prepare_user', $response, $user, $request );
+	}
+
+	/**
+	 * Validates the password parameter.
+	 *
+	 * @param string $password The user's password.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_password( $password ) {
+		if ( empty( $password ) ) {
+			return Allowed_Errors::invalid_params(
+				'The `password` parameter cannot be empty.'
+			);
+		}
+
+		if ( false !== strpos( $password, '\\' ) ) {
+			return Allowed_Errors::invalid_params(
+				'Passwords cannot contain the `\` (backslash) character.'
+			);
+		}
+	}
+
+	/**
+	 * Validates the code parameter.
+	 *
+	 * @param string $code Code sent to the user email for registration.
+	 *
+	 * @return WP_Error|void
+	 */
+	public function validate_code( $code ) {
+		if ( empty( $code ) ) {
+			return Allowed_Errors::invalid_params(
+				'The `code` parameter cannot be empty.'
+			);
+		}
+
+		if ( ! ctype_alnum( $code ) ) {
+			return Allowed_Errors::invalid_params(
+				'The `code` parameter is invalid.'
+			);
+		}
 	}
 
 	/**
@@ -313,8 +467,6 @@ class Aloud_Auth_Validate extends WP_REST_Controller {
 				'properties'  => $avatar_properties,
 			);
 		}
-
-		$schema['properties']['meta'] = $this->meta->get_field_schema();
 
 		$this->schema = $schema;
 

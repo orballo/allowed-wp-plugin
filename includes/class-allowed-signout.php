@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Controller for the `/aloud/v1/signout` route
+ * Controller for the `/allowed/v1/signout` route
  * in the REST API.
  */
-class Aloud_Auth_Signout extends WP_REST_Controller {
+class Allowed_Signout extends WP_REST_Controller {
 
 	/**
 	 * Route's namespace.
@@ -32,7 +32,7 @@ class Aloud_Auth_Signout extends WP_REST_Controller {
 	}
 
 	/**
-	 * Registers `POST /aloud/v1/signout` route.
+	 * Registers `POST /allowed/v1/signout` route.
 	 *
 	 * @return void
 	 */
@@ -59,7 +59,7 @@ class Aloud_Auth_Signout extends WP_REST_Controller {
 	 */
 	public function signout( $request ) {
 		if ( ! is_user_logged_in() ) {
-			return Aloud_Auth_Errors::not_authenticated();
+			return Allowed_Errors::not_authenticated();
 		}
 
 		$user = wp_get_current_user();
@@ -162,7 +162,7 @@ class Aloud_Auth_Signout extends WP_REST_Controller {
 
 		$response = rest_ensure_response( $data );
 
-		return apply_filters( 'aloud_auth_signout_prepare_user', $response, $user, $request );
+		return apply_filters( 'allowed_signout_prepare_user', $response, $user, $request );
 	}
 
 	/**

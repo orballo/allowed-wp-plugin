@@ -1,5 +1,5 @@
 {
-  "name": "orballo/aloud-auth-wp-plugin",
+  "name": "orballo/allowed-wp-plugin",
   "description": "Sign-up, sign-in and authentication for WordPress REST API.",
   "version": "0.1.0",
   "type": "wordpress-plugin",

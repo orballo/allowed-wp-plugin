@@ -1,6 +1,6 @@
-# Aloud Auth WP Plugin
+# Allowed WP Plugin
 
-WordPress plugin for registration and authentication through REST API.
+WordPress plugin for registration and authentication over REST API.
 
 ## Goals
 
@@ -30,36 +30,47 @@ WordPress plugin for registration and authentication through REST API.
 
 ## Docs
 
+### Routes
+
+- `/allowed/v1/signup` (params: `username`, `email`, `password`)
+- `/allowed/v1/signup/passwordless` (params: `username`, `email`, `code`)
+- `/allowed/v1/signin` (params: `username`, `email`, `password`)
+- `/allowed/v1/signin/passwordless` (params: `username`, `email`, `code`)
+- `/allowed/v1/signout`
+- `/allowed/v1/delete` (params: `password`)
+- `/allowed/v1/delete/passwordless` (params: `code`)
+- `/allowed/v1/validate/`
+
 ### List of error codes
 
 #### Sign In
 
-- `400` `aloud_auth_missing_params`
+- `400` `allowed_missing_params`
 - `400` `rest_invalid_param`
-- `401` `aloud_auth_invalid_credentials`
-- `403` `aloud_auth_invalid_host`
+- `401` `allowed_invalid_credentials`
+- `403` `allowed_invalid_host`
 
 #### Sign Up
 
-- `400` `aloud_auth_missing_params`
+- `400` `allowed_missing_params`
 - `400` `rest_invalid_param`
-- `400` `aloud_auth_existing_email`
-- `400` `aloud_auth_existing_username`
-- `401` `aloud_auth_invalid_credentials`
-- `403` `aloud_auth_invalid_host`
+- `400` `allowed_existing_email`
+- `400` `allowed_existing_username`
+- `401` `allowed_invalid_credentials`
+- `403` `allowed_invalid_host`
 
 #### Sign Out
 
-- `401` `aloud_auth_not_authenticated`
+- `401` `allowed_not_authenticated`
 
 #### Delete
 
-- `400` `aloud_auth_missing_params`
+- `400` `allowed_missing_params`
 - `400` `rest_invalid_param`
-- `401` `aloud_auth_not_authenticated`
-- `401` `aloud_auth_invalid_credentials`
-- `500` `aloud_auth_cannot_delete_account`
+- `401` `allowed_not_authenticated`
+- `401` `allowed_invalid_credentials`
+- `500` `allowed_cannot_delete_account`
 
 #### Validate
 
-- `401` `aloud_auth_not_authenticated`
+- `401` `allowed_not_authenticated`
